@@ -10,12 +10,11 @@ from vtkmodules.vtkRenderingCore import (
     vtkRenderWindowInteractor,
 )
 
-# Required for interacter factory initialization
+# Required for interactor initialization
 from vtkmodules.vtkInteractionStyle import vtkInteractorStyleSwitch  # noqa
 
-# Required for remote rendering factory initialization, not necessary for
+# Required for rendering initialization, not necessary for
 # local rendering, but doesn't hurt to include it
-
 import vtkmodules.vtkRenderingOpenGL2  # noqa
 
 
@@ -39,24 +38,14 @@ actor.SetMapper(mapper)
 
 renderer.AddActor(actor)
 renderer.ResetCamera()
-renderWindow.Render()
-
-# -----------------------------------------------------------------------------
-# Functions
-# -----------------------------------------------------------------------------
-
-
-def update_view(**kwargs):
-    html_view.update()
-
 
 # -----------------------------------------------------------------------------
 # GUI
 # -----------------------------------------------------------------------------
 
-layout = FullScreenPage("Hello trame")
-
 html_view = vtk.VtkLocalView(renderWindow)
+
+layout = FullScreenPage("Hello trame", on_ready=html_view.update)
 
 layout.children += [
     vuetify.VContainer(
@@ -65,8 +54,6 @@ layout.children += [
         children=[html_view],
     )
 ]
-
-layout.on_ready = update_view
 
 # -----------------------------------------------------------------------------
 # Main

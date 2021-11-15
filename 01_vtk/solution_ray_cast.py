@@ -99,8 +99,8 @@ ren1.ResetCamera()
 layout = SinglePage("Hello trame")
 layout.title.set_text("Hello trame")
 
-# html_view = vtk.VtkRemoteView(renWin)
-html_view = vtk.VtkLocalView(renWin)
+html_view = vtk.VtkRemoteView(renWin)
+# html_view = vtk.VtkLocalView(renWin)
 
 layout.content.children += [
     vuetify.VContainer(

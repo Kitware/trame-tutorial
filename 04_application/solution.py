@@ -8,6 +8,7 @@ from vtkmodules.vtkCommonDataModel import vtkDataObject
 from vtkmodules.vtkFiltersCore import vtkContourFilter
 from vtkmodules.vtkIOXML import vtkXMLUnstructuredGridReader
 from vtkmodules.vtkRenderingAnnotation import vtkCubeAxesActor
+
 from vtkmodules.vtkRenderingCore import (
     vtkActor,
     vtkDataSetMapper,
@@ -28,6 +29,8 @@ CURRENT_DIRECTORY = os.path.abspath(os.path.dirname(__file__))
 # -----------------------------------------------------------------------------
 # Constants
 # -----------------------------------------------------------------------------
+
+
 class Representation:
     Points = 0
     Wireframe = 1
@@ -139,8 +142,8 @@ contour_lut.SetValueRange(1.0, 1.0)
 contour_lut.Build()
 
 # Contour: Color by default array
-contour_mapper.GetLookupTable().SetRange(default_min, default_max)
 contour_mapper.SelectColorArray(default_array.get("text"))
+contour_mapper.GetLookupTable().SetRange(default_min, default_max)
 if default_array.get("type") == vtkDataObject.FIELD_ASSOCIATION_POINTS:
     contour_mapper.SetScalarModeToUsePointFieldData()
 else:
@@ -163,31 +166,14 @@ cube_axes.SetFlyModeToOuterEdges()
 renderer.ResetCamera()
 
 # -----------------------------------------------------------------------------
-# trame Views
-# -----------------------------------------------------------------------------
-
-local_view = vtk.VtkLocalView(renderWindow)
-remote_view = vtk.VtkRemoteView(renderWindow, interactive_ratio=(1,))
-html_view = local_view
-
-# -----------------------------------------------------------------------------
 # Callbacks
-# -----------------------------------------------------------------------------
-
-
-def update_view(**kwargs):
-    html_view.update()
-
-
-# -----------------------------------------------------------------------------
-# Toolbar Callbacks
 # -----------------------------------------------------------------------------
 
 
 @change("cube_axes_visibility")
 def update_cube_axes_visibility(cube_axes_visibility, **kwargs):
     cube_axes.SetVisibility(cube_axes_visibility)
-    update_view()
+    html_view.update()
 
 
 @change("local_vs_remote")
@@ -204,14 +190,33 @@ def update_local_vs_remote(local_vs_remote, **kwargs):
     layout.flush_content()
 
     # Update View
-    update_view()
+    html_view.update()
 
 
-# -----------------------------------------------------------------------------
+# Selection Change
+def actives_change(ids):
+    _id = ids[0]
+    if _id == "1":  # Mesh
+        update_state("active_ui", "mesh")
+    elif _id == "2":  # Contour
+        update_state("active_ui", "contour")
+    else:
+        update_state("active_ui", "nothing")
+
+
+# Visibility Change
+def visibility_change(event):
+    _id = event["id"]
+    _visibility = event["visible"]
+
+    if _id == "1":  # Mesh
+        mesh_actor.SetVisibility(_visibility)
+    elif _id == "2":  # Contour
+        contour_actor.SetVisibility(_visibility)
+    html_view.update()
+
+
 # Representation Callbacks
-# -----------------------------------------------------------------------------
-
-
 def update_representation(actor, mode):
     property = actor.GetProperty()
     if mode == Representation.Points:
@@ -235,20 +240,16 @@ def update_representation(actor, mode):
 @change("mesh_representation")
 def update_mesh_representation(mesh_representation, **kwargs):
     update_representation(mesh_actor, mesh_representation)
-    update_view()
+    html_view.update()
 
 
 @change("contour_representation")
 def update_contour_representation(contour_representation, **kwargs):
     update_representation(contour_actor, contour_representation)
-    update_view()
+    html_view.update()
 
 
-# -----------------------------------------------------------------------------
-# ColorBy Callbacks
-# -----------------------------------------------------------------------------
-
-
+# Color By Callbacks
 def color_by_array(actor, array):
     _min, _max = array.get("range")
     mapper = actor.GetMapper()
@@ -258,7 +259,6 @@ def color_by_array(actor, array):
         mesh_mapper.SetScalarModeToUsePointFieldData()
     else:
         mesh_mapper.SetScalarModeToUseCellFieldData()
-    mapper.SetScalarModeToUsePointFieldData()
     mapper.SetScalarVisibility(True)
     mapper.SetUseLookupTableScalarRange(True)
 
@@ -267,21 +267,17 @@ def color_by_array(actor, array):
 def update_mesh_color_by_name(mesh_color_array_idx, **kwargs):
     array = dataset_arrays[mesh_color_array_idx]
     color_by_array(mesh_actor, array)
-    update_view()
+    html_view.update()
 
 
 @change("contour_color_array_idx")
 def update_contour_color_by_name(contour_color_array_idx, **kwargs):
     array = dataset_arrays[contour_color_array_idx]
     color_by_array(contour_actor, array)
-    update_view()
+    html_view.update()
 
 
-# -----------------------------------------------------------------------------
-# ColorMap Callbacks
-# -----------------------------------------------------------------------------
-
-
+# Color Map Callbacks
 def use_preset(actor, preset):
     lut = actor.GetMapper().GetLookupTable()
     if preset == LookupTable.Rainbow:
@@ -306,37 +302,29 @@ def use_preset(actor, preset):
 @change("mesh_color_preset")
 def update_mesh_color_preset(mesh_color_preset, **kwargs):
     use_preset(mesh_actor, mesh_color_preset)
-    update_view()
+    html_view.update()
 
 
 @change("contour_color_preset")
 def update_contour_color_preset(contour_color_preset, **kwargs):
     use_preset(contour_actor, contour_color_preset)
-    update_view()
+    html_view.update()
 
 
-# -----------------------------------------------------------------------------
 # Opacity Callbacks
-# -----------------------------------------------------------------------------
-
-
 @change("mesh_opacity")
 def update_mesh_opacity(mesh_opacity, **kwargs):
     mesh_actor.GetProperty().SetOpacity(mesh_opacity)
-    update_view()
+    html_view.update()
 
 
 @change("contour_opacity")
 def update_contour_opacity(contour_opacity, **kwargs):
     contour_actor.GetProperty().SetOpacity(contour_opacity)
-    update_view()
+    html_view.update()
 
 
-# -----------------------------------------------------------------------------
 # Contour Callbacks
-# -----------------------------------------------------------------------------
-
-
 @change("contour_by_array_idx")
 def update_contour_by(contour_by_array_idx, **kwargs):
     array = dataset_arrays[contour_by_array_idx]
@@ -353,44 +341,25 @@ def update_contour_by(contour_by_array_idx, **kwargs):
     update_state("contour_step", contour_step)
 
     # Update View
-    update_view()
+    html_view.update()
 
 
 @change("contour_value")
 def update_contour_value(contour_value, **kwargs):
     contour.SetValue(0, float(contour_value))
-    update_view()
+    html_view.update()
 
 
 # -----------------------------------------------------------------------------
-# Pipeline Widget Callbacks
+# Views
 # -----------------------------------------------------------------------------
 
-# Selection Change
-def actives_change(ids):
-    _id = ids[0]
-    if _id == "1":  # Mesh
-        update_state("active_ui", "mesh")
-    elif _id == "2":  # Contour
-        update_state("active_ui", "contour")
-    else:
-        update_state("active_ui", "nothing")
-
-
-# Visibility Change
-def visibility_change(event):
-    _id = event["id"]
-    _visibility = event["visible"]
-
-    if _id == "1":  # Mesh
-        mesh_actor.SetVisibility(_visibility)
-    elif _id == "2":  # Contour
-        contour_actor.SetVisibility(_visibility)
-    update_view()
-
+local_view = vtk.VtkLocalView(renderWindow)
+remote_view = vtk.VtkRemoteView(renderWindow, interactive_ratio=(1,))
+html_view = local_view
 
 # -----------------------------------------------------------------------------
-# GUI Toolbar Buttons
+# GUI elements
 # -----------------------------------------------------------------------------
 
 
@@ -423,11 +392,6 @@ def standard_buttons():
         vuetify.VIcon("mdi-crop-free")
 
 
-# -----------------------------------------------------------------------------
-# GUI Pipelines Widget
-# -----------------------------------------------------------------------------
-
-
 def pipeline_widget():
     widgets.GitTree(
         sources=(
@@ -440,11 +404,6 @@ def pipeline_widget():
         actives_change=(actives_change, "[$event]"),
         visibility_change=(visibility_change, "[$event]"),
     )
-
-
-# -----------------------------------------------------------------------------
-# GUI Cards
-# -----------------------------------------------------------------------------
 
 
 def ui_card(title, ui_name):
@@ -463,6 +422,7 @@ def ui_card(title, ui_name):
 def mesh_card():
     with ui_card(title="Mesh", ui_name="mesh"):
         vuetify.VSelect(
+            # Representation
             v_model=("mesh_representation", Representation.Surface),
             items=(
                 "representations",
@@ -482,6 +442,7 @@ def mesh_card():
         with vuetify.VRow(classes="pt-2", dense=True):
             with vuetify.VCol(cols="6"):
                 vuetify.VSelect(
+                    # Color By
                     label="Color by",
                     v_model=("mesh_color_array_idx", 0),
                     items=("array_list", dataset_arrays),
@@ -492,6 +453,7 @@ def mesh_card():
                 )
             with vuetify.VCol(cols="6"):
                 vuetify.VSelect(
+                    # Color Map
                     label="Colormap",
                     v_model=("mesh_color_preset", LookupTable.Rainbow),
                     items=(
@@ -509,6 +471,7 @@ def mesh_card():
                     classes="pt-1",
                 )
         vuetify.VSlider(
+            # Opacity
             v_model=("mesh_opacity", 1.0),
             min=0,
             max=1,
@@ -523,6 +486,7 @@ def mesh_card():
 def contour_card():
     with ui_card(title="Contour", ui_name="contour"):
         vuetify.VSelect(
+            # Contour By
             label="Contour by",
             v_model=("contour_by_array_idx", 0),
             items=("array_list", dataset_arrays),
@@ -532,6 +496,7 @@ def contour_card():
             classes="pt-1",
         )
         vuetify.VSlider(
+            # Contour Value
             v_model=("contour_value", contour_value),
             min=("contour_min", default_min),
             max=("contour_max", default_max),
@@ -542,6 +507,7 @@ def contour_card():
             dense=True,
         )
         vuetify.VSelect(
+            # Representation
             v_model=("contour_representation", Representation.Surface),
             items=(
                 "representations",
@@ -561,6 +527,7 @@ def contour_card():
         with vuetify.VRow(classes="pt-2", dense=True):
             with vuetify.VCol(cols="6"):
                 vuetify.VSelect(
+                    # Color By
                     label="Color by",
                     v_model=("contour_color_array_idx", 0),
                     items=("array_list", dataset_arrays),
@@ -571,6 +538,7 @@ def contour_card():
                 )
             with vuetify.VCol(cols="6"):
                 vuetify.VSelect(
+                    # Color Map
                     label="Colormap",
                     v_model=("contour_color_preset", LookupTable.Rainbow),
                     items=(
@@ -588,6 +556,7 @@ def contour_card():
                     classes="pt-1",
                 )
         vuetify.VSlider(
+            # Opacity
             v_model=("contour_opacity", 1.0),
             min=0,
             max=1,
@@ -603,7 +572,7 @@ def contour_card():
 # GUI
 # -----------------------------------------------------------------------------
 
-layout = SinglePageWithDrawer("Viewer", on_ready=update_view)
+layout = SinglePageWithDrawer("Viewer", on_ready=html_view.update)
 layout.title.set_text("Viewer")
 
 with layout.toolbar:

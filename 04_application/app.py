@@ -38,7 +38,23 @@ renderWindowInteractor = vtkRenderWindowInteractor()
 renderWindowInteractor.SetRenderWindow(renderWindow)
 renderWindowInteractor.GetInteractorStyle().SetCurrentStyleToTrackballCamera()
 
-# ...
+# Read Data
+
+# Extract Array/Field information
+
+# Mesh
+# Mesh: Setup default representation to surface
+# Mesh: Apply rainbow color map
+# Mesh: Color by default array
+
+# Contour
+# Contour: ContourBy default array
+# Contour: Setup default representation to surface
+# Contour: Apply rainbow color map
+# Contour: Color by default array
+
+# Cube Axes
+# Cube Axes: Boundaries, camera, and styling
 
 renderer.ResetCamera()
 
@@ -51,7 +67,13 @@ renderer.ResetCamera()
 # Views
 # -----------------------------------------------------------------------------
 
-html_view = vtk.VtkLocalView(renderWindow)
+local_view = vtk.VtkLocalView(renderWindow)
+remote_view = vtk.VtkRemoteView(renderWindow, interactive_ratio=(1,))
+html_view = local_view
+
+# -----------------------------------------------------------------------------
+# GUI elements
+# -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
 # GUI
@@ -65,6 +87,7 @@ with layout.toolbar:
     pass
 
 with layout.content:
+    # content components
     vuetify.VContainer(
         fluid=True,
         classes="pa-0 fill-height",

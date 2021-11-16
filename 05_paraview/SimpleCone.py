@@ -37,7 +37,7 @@ def update_reset_resolution():
 # GUI
 # -----------------------------------------------------------------------------
 
-html_view = paraview.VtkRemoteView(view) # Remote rendering
+html_view = paraview.VtkRemoteView(view)  # Remote rendering
 # html_view = paraview.VtkLocalView(view) # Local rendering
 
 layout = SinglePage("ParaView cone", on_ready=update_cone)

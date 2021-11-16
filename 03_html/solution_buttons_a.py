@@ -10,12 +10,11 @@ from vtkmodules.vtkRenderingCore import (
     vtkRenderWindowInteractor,
 )
 
-# Required for interacter factory initialization
+# Required for interactor initialization
 from vtkmodules.vtkInteractionStyle import vtkInteractorStyleSwitch  # noqa
 
-# Required for remote rendering factory initialization, not necessary for
+# Required for rendering initialization, not necessary for
 # local rendering, but doesn't hurt to include it
-
 import vtkmodules.vtkRenderingOpenGL2  # noqa
 
 
@@ -30,7 +29,6 @@ renderWindow.AddRenderer(renderer)
 renderWindowInteractor = vtkRenderWindowInteractor()
 renderWindowInteractor.SetRenderWindow(renderWindow)
 renderWindowInteractor.GetInteractorStyle().SetCurrentStyleToTrackballCamera()
-renderWindowInteractor.EnableRenderOff()
 
 cone_source = vtkConeSource()
 mapper = vtkPolyDataMapper()
@@ -40,38 +38,15 @@ actor.SetMapper(mapper)
 
 renderer.AddActor(actor)
 renderer.ResetCamera()
-renderWindow.Render()
-
-# -----------------------------------------------------------------------------
-# Functions
-# -----------------------------------------------------------------------------
-
-
-def update_view(**kwargs):
-    html_view.update()
-
 
 # -----------------------------------------------------------------------------
 # GUI
 # -----------------------------------------------------------------------------
 
-layout = SinglePage("Hello trame", on_ready=update_view)
-layout.title.set_text("Hello trame")
-
-layout.toolbar.children += [
-    vuetify.VSpacer(),
-    vuetify.VSwitch(
-        v_model="$vuetify.theme.dark",
-        hide_details=True,
-    ),
-    vuetify.VBtn(
-        vuetify.VIcon("mdi-crop-free"),
-        icon=True,
-        click="$refs.view.resetCamera()",
-    ),
-]
-
 html_view = vtk.VtkLocalView(renderWindow)
+
+layout = SinglePage("Hello trame", on_ready=html_view.update)
+layout.title.set_text("Hello trame")
 
 layout.content.children += [
     vuetify.VContainer(
@@ -81,6 +56,19 @@ layout.content.children += [
     )
 ]
 
+layout.toolbar.children += [
+    vuetify.VSpacer(),
+    vuetify.VSwitch(
+        v_model="$vuetify.theme.dark",
+        hide_details=True,
+        dense=True,
+    ),
+    vuetify.VBtn(
+        vuetify.VIcon("mdi-crop-free"),
+        icon=True,
+        click="$refs.view.resetCamera()",
+    ),
+]
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------

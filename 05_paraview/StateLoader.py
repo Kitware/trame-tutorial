@@ -7,7 +7,7 @@ if "--virtual-env" in sys.argv:
     virtualEnv = virtualEnvPath + "/bin/activate_this.py"
     exec(open(virtualEnv).read(), {"__file__": virtualEnv})
 
-import trame as tr
+import trame
 from trame.html import vuetify, paraview
 from trame.layouts import SinglePage
 
@@ -22,7 +22,7 @@ layout = None
 
 def load_data():
     # CLI
-    parser = tr.get_cli_parser()
+    parser = trame.get_cli_parser()
     parser.add_argument("--data", help="Path to state file", dest="data")
     args, _ = parser.parse_known_args()
 

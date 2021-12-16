@@ -338,17 +338,19 @@ def update_contour_value(contour_value, **kwargs):
 # -----------------------------------------------------------------------------
 
 html_view = vtk.VtkRemoteLocalView(
-    renderWindow, 
-    namespace="view", 
-    mode=("viewMode", "local"), 
+    renderWindow,
+    namespace="view",
+    mode=("viewMode", "local"),
     interactive_ratio=1,
 )
+
 
 def update_view():
     if state.viewMode == "local":
         html_view.update_geometry()
     else:
         html_view.update_image()
+
 
 html_view.update = update_view
 

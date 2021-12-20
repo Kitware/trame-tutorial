@@ -1,6 +1,6 @@
 import os
 
-from trame import change, state
+from trame import state
 from trame.layouts import SinglePageWithDrawer
 from trame.html import vtk, vuetify, widgets
 
@@ -170,7 +170,7 @@ renderer.ResetCamera()
 # -----------------------------------------------------------------------------
 
 
-@change("cube_axes_visibility")
+@state.change("cube_axes_visibility")
 def update_cube_axes_visibility(cube_axes_visibility, **kwargs):
     cube_axes.SetVisibility(cube_axes_visibility)
     html_view.update()
@@ -220,13 +220,13 @@ def update_representation(actor, mode):
         property.EdgeVisibilityOn()
 
 
-@change("mesh_representation")
+@state.change("mesh_representation")
 def update_mesh_representation(mesh_representation, **kwargs):
     update_representation(mesh_actor, mesh_representation)
     html_view.update()
 
 
-@change("contour_representation")
+@state.change("contour_representation")
 def update_contour_representation(contour_representation, **kwargs):
     update_representation(contour_actor, contour_representation)
     html_view.update()
@@ -246,14 +246,14 @@ def color_by_array(actor, array):
     mapper.SetUseLookupTableScalarRange(True)
 
 
-@change("mesh_color_array_idx")
+@state.change("mesh_color_array_idx")
 def update_mesh_color_by_name(mesh_color_array_idx, **kwargs):
     array = dataset_arrays[mesh_color_array_idx]
     color_by_array(mesh_actor, array)
     html_view.update()
 
 
-@change("contour_color_array_idx")
+@state.change("contour_color_array_idx")
 def update_contour_color_by_name(contour_color_array_idx, **kwargs):
     array = dataset_arrays[contour_color_array_idx]
     color_by_array(contour_actor, array)
@@ -282,33 +282,33 @@ def use_preset(actor, preset):
     lut.Build()
 
 
-@change("mesh_color_preset")
+@state.change("mesh_color_preset")
 def update_mesh_color_preset(mesh_color_preset, **kwargs):
     use_preset(mesh_actor, mesh_color_preset)
     html_view.update()
 
 
-@change("contour_color_preset")
+@state.change("contour_color_preset")
 def update_contour_color_preset(contour_color_preset, **kwargs):
     use_preset(contour_actor, contour_color_preset)
     html_view.update()
 
 
 # Opacity Callbacks
-@change("mesh_opacity")
+@state.change("mesh_opacity")
 def update_mesh_opacity(mesh_opacity, **kwargs):
     mesh_actor.GetProperty().SetOpacity(mesh_opacity)
     html_view.update()
 
 
-@change("contour_opacity")
+@state.change("contour_opacity")
 def update_contour_opacity(contour_opacity, **kwargs):
     contour_actor.GetProperty().SetOpacity(contour_opacity)
     html_view.update()
 
 
 # Contour Callbacks
-@change("contour_by_array_idx")
+@state.change("contour_by_array_idx")
 def update_contour_by(contour_by_array_idx, **kwargs):
     array = dataset_arrays[contour_by_array_idx]
     contour_min, contour_max = array.get("range")
@@ -327,7 +327,7 @@ def update_contour_by(contour_by_array_idx, **kwargs):
     html_view.update()
 
 
-@change("contour_value")
+@state.change("contour_value")
 def update_contour_value(contour_value, **kwargs):
     contour.SetValue(0, float(contour_value))
     html_view.update()

@@ -1,6 +1,6 @@
 import os
 
-from trame import change, update_state
+from trame import state
 from trame.layouts import SinglePage
 from trame.html import vtk, vuetify
 

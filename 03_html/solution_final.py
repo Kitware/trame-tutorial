@@ -1,4 +1,4 @@
-from trame import change, update_state
+from trame import state
 from trame.layouts import SinglePage
 from trame.html import vtk, vuetify
 
@@ -50,14 +50,14 @@ renderer.ResetCamera()
 # -----------------------------------------------------------------------------
 
 
-@change("resolution")
+@state.change("resolution")
 def update_resolution(resolution, **kwargs):
     cone_source.SetResolution(resolution)
     html_view.update()
 
 
 def reset_resolution():
-    update_state("resolution", DEFAULT_RESOLUTION)
+    state.resolution = DEFAULT_RESOLUTION
 
 
 # -----------------------------------------------------------------------------

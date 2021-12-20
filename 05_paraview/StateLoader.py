@@ -1,7 +1,7 @@
 import venv
 import os
 
-import trame
+from trame import get_cli_parser
 from trame.html import vuetify, paraview
 from trame.layouts import SinglePage
 
@@ -16,7 +16,7 @@ layout = None
 
 def load_data():
     # CLI
-    parser = trame.get_cli_parser()
+    parser = get_cli_parser()
     parser.add_argument("--data", help="Path to state file", dest="data")
     args, _ = parser.parse_known_args()
 

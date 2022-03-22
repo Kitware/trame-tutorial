@@ -1,4 +1,5 @@
-import venv
+from paraview.web import venv  # Available in PV 5.10
+
 import os
 
 from trame import get_cli_parser

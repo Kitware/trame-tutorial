@@ -2,8 +2,9 @@
 
 # Web imports
 import os
-from trame.layouts import SinglePage
-from trame.html import vtk, vuetify
+from trame.app import get_server
+from trame.ui.vuetify import SinglePageLayout
+from trame.widgets import vtk, vuetify
 
 # -----------------------------------------------------------------------------
 # Example:    SimpleRayCast
@@ -96,21 +97,25 @@ ren1.ResetCamera()
 # Web Application setup
 # -----------------------------------------------------------------------------
 
-layout = SinglePage("Hello trame")
-layout.title.set_text("Hello trame")
+server = get_server()
+ctrl = server.controller
 
-html_view = vtk.VtkRemoteView(renWin)
-# html_view = vtk.VtkLocalView(renWin)
+with SinglePageLayout(server) as layout:
+    layout.title.set_text("Hello trame")
 
-layout.content.children += [
-    vuetify.VContainer(
-        fluid=True,
-        classes="pa-0 fill-height",
-        children=[html_view],
-    )
-]
+    with layout.content:
+        with vuetify.VContainer(
+            fluid=True,
+            classes="pa-0 fill-height",
+        ):
+            view = vtk.VtkRemoteView(renWin)
+            # view = vtk.VtkLocalView(renWin)
+            ctrl.on_server_ready.add(view.update)
 
-layout.on_ready = html_view.update
+
+# -----------------------------------------------------------------------------
+# Main
+# -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    layout.start()
+    server.start()

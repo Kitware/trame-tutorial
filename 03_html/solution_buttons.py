@@ -1,5 +1,6 @@
-from trame.layouts import SinglePage
-from trame.html import vtk, vuetify
+from trame.app import get_server
+from trame.ui.vuetify import SinglePageLayout
+from trame.widgets import vtk, vuetify
 
 from vtkmodules.vtkFiltersSources import vtkConeSource
 from vtkmodules.vtkRenderingCore import (
@@ -40,38 +41,37 @@ renderer.AddActor(actor)
 renderer.ResetCamera()
 
 # -----------------------------------------------------------------------------
-# GUI
+# Trame
 # -----------------------------------------------------------------------------
 
-html_view = vtk.VtkLocalView(renderWindow)
+server = get_server()
+ctrl = server.controller
 
-layout = SinglePage("Hello trame", on_ready=html_view.update)
-layout.title.set_text("Hello trame")
+with SinglePageLayout(server) as layout:
+    layout.title.set_text("Hello trame")
 
-layout.content.children += [
-    vuetify.VContainer(
-        fluid=True,
-        classes="pa-0 fill-height",
-        children=[html_view],
-    )
-]
+    with layout.content:
+        with vuetify.VContainer(
+            fluid=True,
+            classes="pa-0 fill-height",
+        ):
+            view = vtk.VtkLocalView(renderWindow)
+            ctrl.on_server_ready.add(view.update)
+            ctrl.view_reset_camera = view.reset_camera
 
-layout.toolbar.children += [
-    vuetify.VSpacer(),
-    vuetify.VSwitch(
-        v_model="$vuetify.theme.dark",
-        hide_details=True,
-        dense=True,
-    ),
-    vuetify.VBtn(
-        vuetify.VIcon("mdi-crop-free"),
-        icon=True,
-        click="$refs.view.resetCamera()",
-    ),
-]
+    with layout.toolbar:
+        vuetify.VSpacer()
+        vuetify.VSwitch(
+            v_model="$vuetify.theme.dark",
+            hide_details=True,
+            dense=True,
+        )
+        with vuetify.VBtn(icon=True, click=ctrl.view_reset_camera):
+            vuetify.VIcon("mdi-crop-free")
+
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    layout.start()
+    server.start()

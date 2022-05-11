@@ -1,15 +1,22 @@
-from trame.layouts import SinglePage
+from trame.app import get_server
+from trame.ui.vuetify import SinglePageLayout
+
+# -----------------------------------------------------------------------------
+# Get a server to work with
+# -----------------------------------------------------------------------------
+
+server = get_server()
 
 # -----------------------------------------------------------------------------
 # GUI
 # -----------------------------------------------------------------------------
 
-layout = SinglePage("Hello trame")
-layout.title.set_text("Hello trame")
+with SinglePageLayout(server) as layout:
+    layout.title.set_text("Hello trame")
 
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    layout.start()
+    server.start()

@@ -1,6 +1,7 @@
 import os
-from trame.layouts import SinglePage
-from trame.html import vtk, vuetify
+from trame.app import get_server
+from trame.ui.vuetify import SinglePageLayout
+from trame.widgets import vtk, vuetify
 
 from vtkmodules.vtkCommonColor import vtkNamedColors
 from vtkmodules.vtkCommonCore import vtkLookupTable
@@ -126,22 +127,24 @@ renderWindow.Render()
 # GUI
 # -----------------------------------------------------------------------------
 
-html_view = vtk.VtkLocalView(renderWindow)
+server = get_server()
+ctrl = server.controller
 
-layout = SinglePage("Hello trame", on_ready=html_view.update)
-layout.title.set_text("Hello trame")
+with SinglePageLayout(server) as layout:
+    layout.title.set_text("Hello trame")
 
-layout.content.children += [
-    vuetify.VContainer(
-        fluid=True,
-        classes="pa-0 fill-height",
-        children=[html_view],
-    )
-]
+    with layout.content:
+        with vuetify.VContainer(
+            fluid=True,
+            classes="pa-0 fill-height",
+        ):
+            view = vtk.VtkLocalView(renderWindow)
+            ctrl.on_server_ready.add(view.update)
+
 
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    layout.start()
+    server.start()

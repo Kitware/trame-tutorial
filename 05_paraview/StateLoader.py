@@ -2,11 +2,18 @@ from paraview.web import venv  # Available in PV 5.10
 
 import os
 
-from trame import get_cli_parser
-from trame.html import vuetify, paraview
-from trame.layouts import SinglePage
+from trame.app import get_server
+from trame.widgets import vuetify, paraview
+from trame.ui.vuetify import SinglePageLayout
 
 from paraview import simple
+
+# -----------------------------------------------------------------------------
+# trame setup
+# -----------------------------------------------------------------------------
+
+server = get_server()
+state, ctrl = server.state, server.controller
 
 # -----------------------------------------------------------------------------
 # ParaView code
@@ -17,9 +24,8 @@ layout = None
 
 def load_data():
     # CLI
-    parser = get_cli_parser()
-    parser.add_argument("--data", help="Path to state file", dest="data")
-    args, _ = parser.parse_known_args()
+    server.cli.add_argument("--data", help="Path to state file", dest="data")
+    args, _ = server.cli.parse_known_args()
 
     full_path = os.path.abspath(args.data)
     working_directory = os.path.dirname(full_path)
@@ -34,23 +40,26 @@ def load_data():
     view.MakeRenderWindowInteractor(True)
 
     # HTML
-    html_view = paraview.VtkRemoteView(view)
-    layout.content.children[0].add_child(html_view)
-    layout.flush_content()
+    with layout:
+        with layout.content:
+            with vuetify.VContainer(fluid=True, classes="pa-0 fill-height"):
+                html_view = paraview.VtkRemoteView(view)
+                ctrl.view_reset_camera = html_view.reset_camera
+                ctrl.view_update = html_view.update
 
 
 # -----------------------------------------------------------------------------
 # GUI
 # -----------------------------------------------------------------------------
+state.trame__title = "State Viewer"
 
-layout = SinglePage("State Viewer", on_ready=load_data)
-layout.logo.click = "$refs.view.resetCamera()"
-layout.title.set_text("ParaView State Viewer")
-layout.content.add_child(vuetify.VContainer(fluid=True, classes="pa-0 fill-height"))
+with SinglePageLayout(server) as layout:
+    layout.icon.click = ctrl.view_reset_camera
+    layout.title.set_text("ParaView State Viewer")
 
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    layout.start()
+    server.start()

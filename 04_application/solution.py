@@ -201,7 +201,7 @@ def actives_change(ids):
     elif _id == "2":  # Contour
         state.active_ui = "contour"
     else:
-        state.active_ui= "nothing"
+        state.active_ui = "nothing"
 
 
 # Visibility Change

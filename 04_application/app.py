@@ -1,8 +1,8 @@
 import os
 
-from trame import state
-from trame.layouts import SinglePage
-from trame.html import vtk, vuetify
+from trame.app import get_server
+from trame.ui.vuetify import SinglePageLayout
+from trame.widgets import vtk, vuetify
 
 from vtkmodules.vtkRenderingCore import (
     vtkActor,

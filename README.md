@@ -1,4 +1,4 @@
-# Tutorial material for trame
+# Tutorial material for trame v2
 
 trame - a web framework that weaves together open source components into customized visual analytics easily.
 

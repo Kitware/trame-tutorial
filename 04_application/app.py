@@ -59,17 +59,15 @@ renderWindowInteractor.GetInteractorStyle().SetCurrentStyleToTrackballCamera()
 renderer.ResetCamera()
 
 # -----------------------------------------------------------------------------
+# Trame setup
+# -----------------------------------------------------------------------------
+
+server = get_server()
+state, ctrl = server.state, server.controller
+
+# -----------------------------------------------------------------------------
 # Callbacks
 # -----------------------------------------------------------------------------
-
-
-# -----------------------------------------------------------------------------
-# Views
-# -----------------------------------------------------------------------------
-
-local_view = vtk.VtkLocalView(renderWindow)
-remote_view = vtk.VtkRemoteView(renderWindow, interactive_ratio=(1,))
-html_view = local_view
 
 # -----------------------------------------------------------------------------
 # GUI elements
@@ -79,24 +77,27 @@ html_view = local_view
 # GUI
 # -----------------------------------------------------------------------------
 
-layout = SinglePage("Viewer", on_ready=html_view.update)
-layout.title.set_text("Viewer")
+with SinglePageLayout(server) as layout:
+    layout.title.set_text("Viewer")
 
-with layout.toolbar:
-    # toolbar components
-    pass
+    with layout.toolbar:
+        # toolbar components
+        pass
 
-with layout.content:
-    # content components
-    vuetify.VContainer(
-        fluid=True,
-        classes="pa-0 fill-height",
-        children=[html_view],
-    )
+    with layout.content:
+        # content components
+        with vuetify.VContainer(
+            fluid=True,
+            classes="pa-0 fill-height",
+        ):
+            view = vtk.VtkLocalView(renderWindow)
+            ctrl.view_update = view.update
+            ctrl.view_reset_camera = view.reset_camera
+            ctrl.on_server_ready.add(view.update)
 
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    layout.start()
+    server.start()

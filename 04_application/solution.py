@@ -1,8 +1,8 @@
 import os
 
-from trame import state
-from trame.layouts import SinglePageWithDrawer
-from trame.html import vtk, vuetify, widgets
+from trame.app import get_server
+from trame.ui.vuetify import SinglePageWithDrawerLayout
+from trame.widgets import vtk, vuetify, trame
 
 from vtkmodules.vtkCommonDataModel import vtkDataObject
 from vtkmodules.vtkFiltersCore import vtkContourFilter
@@ -166,6 +166,15 @@ cube_axes.SetFlyModeToOuterEdges()
 renderer.ResetCamera()
 
 # -----------------------------------------------------------------------------
+# Trame setup
+# -----------------------------------------------------------------------------
+
+server = get_server()
+state, ctrl = server.state, server.controller
+
+state.setdefault("active_ui", None)
+
+# -----------------------------------------------------------------------------
 # Callbacks
 # -----------------------------------------------------------------------------
 
@@ -173,24 +182,7 @@ renderer.ResetCamera()
 @state.change("cube_axes_visibility")
 def update_cube_axes_visibility(cube_axes_visibility, **kwargs):
     cube_axes.SetVisibility(cube_axes_visibility)
-    html_view.update()
-
-
-@state.change("local_vs_remote")
-def update_local_vs_remote(local_vs_remote, **kwargs):
-    # Switch html_view
-    global html_view
-    if local_vs_remote:
-        html_view = local_view
-    else:
-        html_view = remote_view
-
-    # Update layout
-    layout.content.children[0].children[0] = html_view
-    layout.flush_content()
-
-    # Update View
-    html_view.update()
+    ctrl.view_update()
 
 
 # Selection Change
@@ -213,7 +205,7 @@ def visibility_change(event):
         mesh_actor.SetVisibility(_visibility)
     elif _id == "2":  # Contour
         contour_actor.SetVisibility(_visibility)
-    html_view.update()
+    ctrl.view_update()
 
 
 # Representation Callbacks
@@ -240,13 +232,13 @@ def update_representation(actor, mode):
 @state.change("mesh_representation")
 def update_mesh_representation(mesh_representation, **kwargs):
     update_representation(mesh_actor, mesh_representation)
-    html_view.update()
+    ctrl.view_update()
 
 
 @state.change("contour_representation")
 def update_contour_representation(contour_representation, **kwargs):
     update_representation(contour_actor, contour_representation)
-    html_view.update()
+    ctrl.view_update()
 
 
 # Color By Callbacks
@@ -267,14 +259,14 @@ def color_by_array(actor, array):
 def update_mesh_color_by_name(mesh_color_array_idx, **kwargs):
     array = dataset_arrays[mesh_color_array_idx]
     color_by_array(mesh_actor, array)
-    html_view.update()
+    ctrl.view_update()
 
 
 @state.change("contour_color_array_idx")
 def update_contour_color_by_name(contour_color_array_idx, **kwargs):
     array = dataset_arrays[contour_color_array_idx]
     color_by_array(contour_actor, array)
-    html_view.update()
+    ctrl.view_update()
 
 
 # Color Map Callbacks
@@ -302,26 +294,26 @@ def use_preset(actor, preset):
 @state.change("mesh_color_preset")
 def update_mesh_color_preset(mesh_color_preset, **kwargs):
     use_preset(mesh_actor, mesh_color_preset)
-    html_view.update()
+    ctrl.view_update()
 
 
 @state.change("contour_color_preset")
 def update_contour_color_preset(contour_color_preset, **kwargs):
     use_preset(contour_actor, contour_color_preset)
-    html_view.update()
+    ctrl.view_update()
 
 
 # Opacity Callbacks
 @state.change("mesh_opacity")
 def update_mesh_opacity(mesh_opacity, **kwargs):
     mesh_actor.GetProperty().SetOpacity(mesh_opacity)
-    html_view.update()
+    ctrl.view_update()
 
 
 @state.change("contour_opacity")
 def update_contour_opacity(contour_opacity, **kwargs):
     contour_actor.GetProperty().SetOpacity(contour_opacity)
-    html_view.update()
+    ctrl.view_update()
 
 
 # Contour Callbacks
@@ -341,22 +333,14 @@ def update_contour_by(contour_by_array_idx, **kwargs):
     state.contour_step = contour_step
 
     # Update View
-    html_view.update()
+    ctrl.view_update()
 
 
 @state.change("contour_value")
 def update_contour_value(contour_value, **kwargs):
     contour.SetValue(0, float(contour_value))
-    html_view.update()
+    ctrl.view_update()
 
-
-# -----------------------------------------------------------------------------
-# Views
-# -----------------------------------------------------------------------------
-
-local_view = vtk.VtkLocalView(renderWindow)
-remote_view = vtk.VtkRemoteView(renderWindow, interactive_ratio=(1,))
-html_view = local_view
 
 # -----------------------------------------------------------------------------
 # GUI elements
@@ -381,9 +365,11 @@ def standard_buttons():
         dense=True,
     )
     vuetify.VCheckbox(
-        v_model=("local_vs_remote", True),
+        v_model=("viewMode", "local"),
         on_icon="mdi-lan-disconnect",
         off_icon="mdi-lan-connect",
+        true_value="local",
+        false_value="remote",
         classes="mx-1",
         hide_details=True,
         dense=True,
@@ -393,7 +379,7 @@ def standard_buttons():
 
 
 def pipeline_widget():
-    widgets.GitTree(
+    trame.GitTree(
         sources=(
             "pipeline",
             [
@@ -572,39 +558,41 @@ def contour_card():
 # GUI
 # -----------------------------------------------------------------------------
 
-layout = SinglePageWithDrawer("Viewer", on_ready=html_view.update)
-layout.title.set_text("Viewer")
+with SinglePageWithDrawerLayout(server) as layout:
+    layout.title.set_text("Viewer")
 
-with layout.toolbar:
-    # toolbar components
-    vuetify.VSpacer()
-    vuetify.VDivider(vertical=True, classes="mx-2")
-    standard_buttons()
+    with layout.toolbar:
+        # toolbar components
+        vuetify.VSpacer()
+        vuetify.VDivider(vertical=True, classes="mx-2")
+        standard_buttons()
 
-with layout.drawer as drawer:
-    # drawer components
-    drawer.width = 325
-    pipeline_widget()
-    vuetify.VDivider(classes="mb-2")
-    mesh_card()
-    contour_card()
+    with layout.drawer as drawer:
+        # drawer components
+        drawer.width = 325
+        pipeline_widget()
+        vuetify.VDivider(classes="mb-2")
+        mesh_card()
+        contour_card()
 
-with layout.content:
-    # content components
-    vuetify.VContainer(
-        fluid=True,
-        classes="pa-0 fill-height",
-        children=[html_view],
-    )
-
-# State use to track active ui card
-layout.state = {
-    "active_ui": None,
-}
+    with layout.content:
+        # content components
+        with vuetify.VContainer(
+            fluid=True,
+            classes="pa-0 fill-height",
+        ):
+            # view = vtk.VtkRemoteView(renderWindow, interactive_ratio=1)
+            # view = vtk.VtkLocalView(renderWindow)
+            view = vtk.VtkRemoteLocalView(
+                renderWindow, namespace="view", mode="local", interactive_ratio=1
+            )
+            ctrl.view_update = view.update
+            ctrl.view_reset_camera = view.reset_camera
+            ctrl.on_server_ready.add(view.update)
 
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    layout.start()
+    server.start()

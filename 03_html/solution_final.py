@@ -67,9 +67,6 @@ def reset_resolution():
     state.resolution = DEFAULT_RESOLUTION
 
 
-# Life cycle update
-ctrl.on_server_ready.add(ctrl.view_update)
-
 # -----------------------------------------------------------------------------
 # GUI
 # -----------------------------------------------------------------------------

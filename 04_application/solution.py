@@ -588,7 +588,6 @@ with SinglePageWithDrawerLayout(server) as layout:
             )
             ctrl.view_update = view.update
             ctrl.view_reset_camera = view.reset_camera
-            ctrl.on_server_ready.add(view.update)
 
 # -----------------------------------------------------------------------------
 # Main

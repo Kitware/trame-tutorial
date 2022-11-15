@@ -110,7 +110,6 @@ with SinglePageLayout(server) as layout:
         ):
             view = vtk.VtkRemoteView(renWin)
             # view = vtk.VtkLocalView(renWin)
-            ctrl.on_server_ready.add(view.update)
 
 
 # -----------------------------------------------------------------------------

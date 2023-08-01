@@ -11,6 +11,7 @@ from trame.ui.vuetify import SinglePageLayout
 # -----------------------------------------------------------------------------
 
 server = get_server()
+server.client_type = "vue2"
 state, ctrl = server.state, server.controller
 
 # Preload paraview modules onto server

@@ -5,8 +5,7 @@ from trame.ui.vuetify import SinglePageLayout
 # Get a server to work with
 # -----------------------------------------------------------------------------
 
-server = get_server()
-server.client_type = "vue2"
+server = get_server(client_type = "vue2")
 
 # -----------------------------------------------------------------------------
 # GUI

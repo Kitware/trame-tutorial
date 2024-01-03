@@ -97,8 +97,7 @@ ren1.ResetCamera()
 # Web Application setup
 # -----------------------------------------------------------------------------
 
-server = get_server()
-server.client_type = "vue2"
+server = get_server(client_type = "vue2")
 ctrl = server.controller
 
 with SinglePageLayout(server) as layout:

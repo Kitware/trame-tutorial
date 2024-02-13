@@ -4,6 +4,8 @@ from trame.app import get_server
 from trame.ui.vuetify import SinglePageWithDrawerLayout
 from trame.widgets import vtk, vuetify, trame
 
+from trame_vtk.modules.vtk.serializers import configure_serializer
+
 from vtkmodules.vtkCommonDataModel import vtkDataObject
 from vtkmodules.vtkFiltersCore import vtkContourFilter
 from vtkmodules.vtkIOXML import vtkXMLUnstructuredGridReader
@@ -25,6 +27,9 @@ from vtkmodules.vtkInteractionStyle import vtkInteractorStyleSwitch  # noqa
 import vtkmodules.vtkRenderingOpenGL2  # noqa
 
 CURRENT_DIRECTORY = os.path.abspath(os.path.dirname(__file__))
+
+# Configure scene encoder
+configure_serializer(encode_lut=True, skip_light=True)
 
 # -----------------------------------------------------------------------------
 # Constants
@@ -169,7 +174,7 @@ renderer.ResetCamera()
 # Trame setup
 # -----------------------------------------------------------------------------
 
-server = get_server(client_type = "vue2")
+server = get_server(client_type="vue2")
 state, ctrl = server.state, server.controller
 
 state.setdefault("active_ui", None)

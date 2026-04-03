@@ -1,11 +1,11 @@
 from trame.app import get_server
-from trame.ui.vuetify import SinglePageLayout
+from trame.ui.vuetify3 import SinglePageLayout
 
 # -----------------------------------------------------------------------------
 # Get a server to work with
 # -----------------------------------------------------------------------------
 
-server = get_server(client_type = "vue2")
+server = get_server()
 
 # -----------------------------------------------------------------------------
 # GUI

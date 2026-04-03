@@ -1,6 +1,6 @@
 from trame.app import get_server
-from trame.ui.vuetify import SinglePageLayout
-from trame.widgets import vtk, vuetify
+from trame.ui.vuetify3 import SinglePageLayout
+from trame.widgets import vtk, vuetify3
 
 from vtkmodules.vtkFiltersSources import vtkConeSource
 from vtkmodules.vtkRenderingCore import (
@@ -49,7 +49,7 @@ renderer.ResetCamera()
 # Trame setup
 # -----------------------------------------------------------------------------
 
-server = get_server(client_type = "vue2")
+server = get_server()
 state, ctrl = server.state, server.controller
 
 # -----------------------------------------------------------------------------
@@ -75,7 +75,7 @@ with SinglePageLayout(server) as layout:
     layout.title.set_text("Hello trame")
 
     with layout.content:
-        with vuetify.VContainer(
+        with vuetify3.VContainer(
             fluid=True,
             classes="pa-0 fill-height",
         ):
@@ -84,8 +84,8 @@ with SinglePageLayout(server) as layout:
             ctrl.view_reset_camera = view.reset_camera
 
     with layout.toolbar:
-        vuetify.VSpacer()
-        vuetify.VSlider(
+        vuetify3.VSpacer()
+        vuetify3.VSlider(
             v_model=("resolution", DEFAULT_RESOLUTION),
             min=3,
             max=60,
@@ -94,18 +94,18 @@ with SinglePageLayout(server) as layout:
             dense=True,
             style="max-width: 300px",
         )
-        with vuetify.VBtn(icon=True, click=reset_resolution):
-            vuetify.VIcon("mdi-restore")
+        with vuetify3.VBtn(icon=True, click=reset_resolution):
+            vuetify3.VIcon("mdi-restore")
 
-        vuetify.VDivider(vertical=True, classes="mx-2")
+        vuetify3.VDivider(vertical=True, classes="mx-2")
 
-        vuetify.VSwitch(
+        vuetify3.VSwitch(
             v_model="$vuetify.theme.dark",
             hide_details=True,
             dense=True,
         )
-        with vuetify.VBtn(icon=True, click=ctrl.view_reset_camera):
-            vuetify.VIcon("mdi-crop-free")
+        with vuetify3.VBtn(icon=True, click=ctrl.view_reset_camera):
+            vuetify3.VIcon("mdi-crop-free")
 
 # -----------------------------------------------------------------------------
 # Main

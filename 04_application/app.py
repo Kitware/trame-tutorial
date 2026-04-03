@@ -1,8 +1,8 @@
 import os
 
 from trame.app import get_server
-from trame.ui.vuetify import SinglePageLayout
-from trame.widgets import vtk, vuetify
+from trame.ui.vuetify3 import SinglePageLayout
+from trame.widgets import vtk, vuetify3
 
 from vtkmodules.vtkRenderingCore import (
     vtkActor,
@@ -62,7 +62,7 @@ renderer.ResetCamera()
 # Trame setup
 # -----------------------------------------------------------------------------
 
-server = get_server(client_type="vue2")
+server = get_server()
 state, ctrl = server.state, server.controller
 
 # -----------------------------------------------------------------------------
@@ -86,7 +86,7 @@ with SinglePageLayout(server) as layout:
 
     with layout.content:
         # content components
-        with vuetify.VContainer(
+        with vuetify3.VContainer(
             fluid=True,
             classes="pa-0 fill-height",
         ):

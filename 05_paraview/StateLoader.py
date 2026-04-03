@@ -3,14 +3,14 @@ from paraview import simple
 
 from pathlib import Path
 from trame.app import get_server
-from trame.widgets import vuetify, paraview, client
-from trame.ui.vuetify import SinglePageLayout
+from trame.widgets import vuetify3, paraview, client
+from trame.ui.vuetify3 import SinglePageLayout
 
 # -----------------------------------------------------------------------------
 # Trame setup
 # -----------------------------------------------------------------------------
 
-server = get_server(client_type = "vue2")
+server = get_server()
 state, ctrl = server.state, server.controller
 
 # Preload paraview modules onto server
@@ -44,7 +44,7 @@ def load_data(**kwargs):
         layout.title.set_text("ParaView State Viewer")
 
         with layout.content:
-            with vuetify.VContainer(fluid=True, classes="pa-0 fill-height"):
+            with vuetify3.VContainer(fluid=True, classes="pa-0 fill-height"):
                 html_view = paraview.VtkRemoteView(view)
                 ctrl.view_reset_camera = html_view.reset_camera
                 ctrl.view_update = html_view.update
@@ -63,7 +63,7 @@ with SinglePageLayout(server) as layout:
     layout.title.set_text("ParaView State Viewer")
 
     with layout.content:
-        with vuetify.VContainer(fluid=True, classes="pa-0 fill-height"):
+        with vuetify3.VContainer(fluid=True, classes="pa-0 fill-height"):
             client.Loading("Loading state")
 
 

@@ -47,7 +47,7 @@ renderer.ResetCamera()
 server = get_server()
 ctrl = server.controller
 
-with SinglePageLayout(server) as layout:
+with SinglePageLayout(server, theme=("theme", "light")) as layout:
     layout.title.set_text("Hello trame")
 
     with layout.content:
@@ -61,8 +61,9 @@ with SinglePageLayout(server) as layout:
     with layout.toolbar:
         vuetify3.VSpacer()
         vuetify3.VSwitch(
-            v_model="$vuetify.theme.dark",
-            click="theme.toggle()",
+            v_model="theme",
+            false_value="light",
+            true_value="dark",
             hide_details=True,
             dense=True,
         )

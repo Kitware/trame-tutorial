@@ -1,6 +1,6 @@
 from trame.app import get_server
 from trame.ui.vuetify3 import SinglePageLayout
-from trame.widgets import vtk, vuetify3
+from trame.widgets import vtk, vuetify3 as vuetify
 
 from vtkmodules.vtkFiltersSources import vtkConeSource
 from vtkmodules.vtkRenderingCore import (
@@ -71,11 +71,11 @@ def reset_resolution():
 # GUI
 # -----------------------------------------------------------------------------
 
-with SinglePageLayout(server) as layout:
+with SinglePageLayout(server, theme=("theme", "light")) as layout:
     layout.title.set_text("Hello trame")
 
     with layout.content:
-        with vuetify3.VContainer(
+        with vuetify.VContainer(
             fluid=True,
             classes="pa-0 fill-height",
         ):
@@ -84,8 +84,8 @@ with SinglePageLayout(server) as layout:
             ctrl.view_reset_camera = view.reset_camera
 
     with layout.toolbar:
-        vuetify3.VSpacer()
-        vuetify3.VSlider(
+        vuetify.VSpacer()
+        vuetify.VSlider(
             v_model=("resolution", DEFAULT_RESOLUTION),
             min=3,
             max=60,
@@ -94,18 +94,20 @@ with SinglePageLayout(server) as layout:
             dense=True,
             style="max-width: 300px",
         )
-        with vuetify3.VBtn(icon=True, click=reset_resolution):
-            vuetify3.VIcon("mdi-restore")
+        with vuetify.VBtn(icon=True, click=reset_resolution):
+            vuetify.VIcon("mdi-restore")
 
-        vuetify3.VDivider(vertical=True, classes="mx-2")
+        vuetify.VDivider(vertical=True, classes="mx-2")
 
-        vuetify3.VSwitch(
-            v_model="$vuetify.theme.dark",
+        vuetify.VSwitch(
+            v_model="theme",
+            false_value="light",
+            true_value="dark",
             hide_details=True,
             dense=True,
         )
-        with vuetify3.VBtn(icon=True, click=ctrl.view_reset_camera):
-            vuetify3.VIcon("mdi-crop-free")
+        with vuetify.VBtn(icon=True, click=ctrl.view_reset_camera):
+            vuetify.VIcon("mdi-crop-free")
 
 # -----------------------------------------------------------------------------
 # Main

@@ -1,6 +1,6 @@
 from trame.app import get_server
 from trame.ui.vuetify3 import SinglePageLayout
-from trame.widgets import vtk, vuetify3
+from trame.widgets import vtk, vuetify3 as vuetify
 
 from vtkmodules.vtkFiltersSources import vtkConeSource
 from vtkmodules.vtkRenderingCore import (
@@ -51,7 +51,7 @@ with SinglePageLayout(server) as layout:
     layout.title.set_text("Hello trame")
 
     with layout.content:
-        with vuetify3.VContainer(
+        with vuetify.VContainer(
             fluid=True,
             classes="pa-0 fill-height",
         ):

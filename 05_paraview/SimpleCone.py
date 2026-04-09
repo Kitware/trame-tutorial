@@ -1,7 +1,7 @@
 import paraview.web.venv  # Available in PV 5.10
 
 from trame.app import get_server
-from trame.widgets import vuetify3, paraview
+from trame.widgets import vuetify3 as vuetify, paraview
 from trame.ui.vuetify3 import SinglePageLayout
 
 from paraview import simple
@@ -45,8 +45,8 @@ with SinglePageLayout(server) as layout:
     layout.title.set_text("Cone Application")
 
     with layout.toolbar:
-        vuetify3.VSpacer()
-        vuetify3.VSlider(
+        vuetify.VSpacer()
+        vuetify.VSlider(
             v_model=("resolution", DEFAULT_RESOLUTION),
             min=3,
             max=60,
@@ -55,12 +55,12 @@ with SinglePageLayout(server) as layout:
             dense=True,
             style="max-width: 300px",
         )
-        vuetify3.VDivider(vertical=True, classes="mx-2")
-        with vuetify3.VBtn(icon=True, click=update_reset_resolution):
-            vuetify3.VIcon("mdi-undo-variant")
+        vuetify.VDivider(vertical=True, classes="mx-2")
+        with vuetify.VBtn(icon=True, click=update_reset_resolution):
+            vuetify.VIcon("mdi-undo-variant")
 
     with layout.content:
-        with vuetify3.VContainer(
+        with vuetify.VContainer(
             fluid=True,
             classes="pa-0 fill-height",
         ):

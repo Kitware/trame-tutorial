@@ -55,7 +55,8 @@ with SinglePageLayout(server) as layout:
             fluid=True,
             classes="pa-0 fill-height",
         ):
-            view = vtk.VtkLocalView(renderWindow)
+            html_view = vtk.VtkLocalView(renderWindow)
+            ctrl.on_server_ready.add(html_view.update)
 
 
 # -----------------------------------------------------------------------------

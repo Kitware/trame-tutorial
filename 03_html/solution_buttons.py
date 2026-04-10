@@ -1,6 +1,6 @@
 from trame.app import get_server
 from trame.ui.vuetify3 import SinglePageLayout
-from trame.widgets import vtk, vuetify3 as vuetify
+from trame.widgets import vtk, vuetify3
 
 from vtkmodules.vtkFiltersSources import vtkConeSource
 from vtkmodules.vtkRenderingCore import (
@@ -51,7 +51,7 @@ with SinglePageLayout(server, theme=("theme", "light")) as layout:
     layout.title.set_text("Hello trame")
 
     with layout.content:
-        with vuetify.VContainer(
+        with vuetify3.VContainer(
             fluid=True,
             classes="pa-0 fill-height",
         ):
@@ -59,16 +59,16 @@ with SinglePageLayout(server, theme=("theme", "light")) as layout:
             ctrl.view_reset_camera = view.reset_camera
 
     with layout.toolbar:
-        vuetify.VSpacer()
-        vuetify.VSwitch(
+        vuetify3.VSpacer()
+        vuetify3.VSwitch(
             v_model="theme",
             false_value="light",
             true_value="dark",
             hide_details=True,
             dense=True,
         )
-        with vuetify.VBtn(icon=True, click=ctrl.view_reset_camera):
-            vuetify.VIcon("mdi-crop-free")
+        with vuetify3.VBtn(icon=True, click=ctrl.view_reset_camera):
+            vuetify3.VIcon("mdi-crop-free")
 
 # -----------------------------------------------------------------------------
 # Main

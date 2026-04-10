@@ -2,7 +2,7 @@ import os
 
 from trame.app import get_server
 from trame.ui.vuetify3 import SinglePageLayout
-from trame.widgets import vtk, vuetify3 as vuetify
+from trame.widgets import vtk, vuetify3
 
 from vtkmodules.vtkRenderingCore import (
     vtkActor,
@@ -86,7 +86,7 @@ with SinglePageLayout(server) as layout:
 
     with layout.content:
         # content components
-        with vuetify.VContainer(
+        with vuetify3.VContainer(
             fluid=True,
             classes="pa-0 fill-height",
         ):

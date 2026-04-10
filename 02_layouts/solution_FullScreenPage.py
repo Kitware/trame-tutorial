@@ -1,6 +1,6 @@
 from trame.app import get_server
 from trame.ui.vuetify3 import VAppLayout
-from trame.widgets import vtk, vuetify3 as vuetify
+from trame.widgets import vtk, vuetify3
 
 from vtkmodules.vtkFiltersSources import vtkConeSource
 from vtkmodules.vtkRenderingCore import (
@@ -49,7 +49,7 @@ ctrl = server.controller
 
 with VAppLayout(server) as layout:
     with layout.root:
-        with vuetify.VContainer(
+        with vuetify3.VContainer(
             fluid=True,
             classes="pa-0 fill-height",
         ):

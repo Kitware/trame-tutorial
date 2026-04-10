@@ -2,7 +2,7 @@ import os
 
 from trame.app import get_server
 from trame.ui.vuetify3 import SinglePageWithDrawerLayout
-from trame.widgets import vtk, vuetify3 as vuetify, trame
+from trame.widgets import vtk, vuetify3, trame
 
 from trame_vtk.modules.vtk.serializers import configure_serializer
 
@@ -353,7 +353,7 @@ def update_contour_value(contour_value, **kwargs):
 
 
 def standard_buttons():
-    vuetify.VCheckbox(
+    vuetify3.VCheckbox(
         v_model=("cube_axes_visibility", True),
         true_icon="mdi-cube-outline",
         false_icon="mdi-cube-off-outline",
@@ -361,7 +361,7 @@ def standard_buttons():
         hide_details=True,
         dense=True,
     )
-    vuetify.VCheckbox(
+    vuetify3.VCheckbox(
         v_model="theme",
         true_value="dark",
         false_value="light",
@@ -371,7 +371,7 @@ def standard_buttons():
         hide_details=True,
         dense=True,
     )
-    vuetify.VCheckbox(
+    vuetify3.VCheckbox(
         v_model=("viewMode", "local"),
         true_icon="mdi-lan-disconnect",
         false_icon="mdi-lan-connect",
@@ -381,8 +381,8 @@ def standard_buttons():
         hide_details=True,
         dense=True,
     )
-    with vuetify.VBtn(icon=True, click=ctrl.view_reset_camera):
-        vuetify.VIcon("mdi-crop-free")
+    with vuetify3.VBtn(icon=True, click=ctrl.view_reset_camera):
+        vuetify3.VIcon("mdi-crop-free")
 
 
 def pipeline_widget():
@@ -400,21 +400,21 @@ def pipeline_widget():
 
 
 def ui_card(title, ui_name):
-    with vuetify.VCard(v_show=f"active_ui == '{ui_name}'"):
-        vuetify.VCardTitle(
+    with vuetify3.VCard(v_show=f"active_ui == '{ui_name}'"):
+        vuetify3.VCardTitle(
             title,
             classes="grey lighten-1 py-1 grey--text text--darken-3",
             style="user-select: none; cursor: pointer",
             hide_details=True,
             dense=True,
         )
-        content = vuetify.VCardText(classes="py-2")
+        content = vuetify3.VCardText(classes="py-2")
     return content
 
 
 def mesh_card():
     with ui_card(title="Mesh", ui_name="mesh"):
-        vuetify.VSelect(
+        vuetify3.VSelect(
             # Representation
             v_model=("mesh_representation", Representation.Surface),
             items=(
@@ -434,9 +434,9 @@ def mesh_card():
             outlined=True,
             classes="pt-1",
         )
-        with vuetify.VRow(classes="pt-2", dense=True):
-            with vuetify.VCol(cols="6"):
-                vuetify.VSelect(
+        with vuetify3.VRow(classes="pt-2", dense=True):
+            with vuetify3.VCol(cols="6"):
+                vuetify3.VSelect(
                     # Color By
                     label="Color by",
                     v_model=("mesh_color_array_idx", 0),
@@ -448,8 +448,8 @@ def mesh_card():
                     outlined=True,
                     classes="pt-1",
                 )
-            with vuetify.VCol(cols="6"):
-                vuetify.VSelect(
+            with vuetify3.VCol(cols="6"):
+                vuetify3.VSelect(
                     # Color Map
                     label="Colormap",
                     v_model=("mesh_color_preset", LookupTable.Rainbow),
@@ -469,7 +469,7 @@ def mesh_card():
                     outlined=True,
                     classes="pt-1",
                 )
-        vuetify.VSlider(
+        vuetify3.VSlider(
             # Opacity
             v_model=("mesh_opacity", 1.0),
             min=0,
@@ -484,7 +484,7 @@ def mesh_card():
 
 def contour_card():
     with ui_card(title="Contour", ui_name="contour"):
-        vuetify.VSelect(
+        vuetify3.VSelect(
             # Contour By
             label="Contour by",
             v_model=("contour_by_array_idx", 0),
@@ -496,7 +496,7 @@ def contour_card():
             outlined=True,
             classes="pt-1",
         )
-        vuetify.VSlider(
+        vuetify3.VSlider(
             # Contour Value
             v_model=("contour_value", contour_value),
             min=("contour_min", default_min),
@@ -507,7 +507,7 @@ def contour_card():
             hide_details=True,
             dense=True,
         )
-        vuetify.VSelect(
+        vuetify3.VSelect(
             # Representation
             v_model=("contour_representation", Representation.Surface),
             items=(
@@ -527,9 +527,9 @@ def contour_card():
             outlined=True,
             classes="pt-1",
         )
-        with vuetify.VRow(classes="pt-2", dense=True):
-            with vuetify.VCol(cols="6"):
-                vuetify.VSelect(
+        with vuetify3.VRow(classes="pt-2", dense=True):
+            with vuetify3.VCol(cols="6"):
+                vuetify3.VSelect(
                     # Color By
                     label="Color by",
                     v_model=("contour_color_array_idx", 0),
@@ -541,8 +541,8 @@ def contour_card():
                     outlined=True,
                     classes="pt-1",
                 )
-            with vuetify.VCol(cols="6"):
-                vuetify.VSelect(
+            with vuetify3.VCol(cols="6"):
+                vuetify3.VSelect(
                     # Color Map
                     label="Colormap",
                     v_model=("contour_color_preset", LookupTable.Rainbow),
@@ -562,7 +562,7 @@ def contour_card():
                     outlined=True,
                     classes="pt-1",
                 )
-        vuetify.VSlider(
+        vuetify3.VSlider(
             # Opacity
             v_model=("contour_opacity", 1.0),
             min=0,
@@ -584,21 +584,21 @@ with SinglePageWithDrawerLayout(server, theme=("theme", "light")) as layout:
 
     with layout.toolbar:
         # toolbar components
-        vuetify.VSpacer()
-        vuetify.VDivider(vertical=True, classes="mx-2")
+        vuetify3.VSpacer()
+        vuetify3.VDivider(vertical=True, classes="mx-2")
         standard_buttons()
 
     with layout.drawer as drawer:
         # drawer components
         drawer.width = 325
         pipeline_widget()
-        vuetify.VDivider(classes="mb-2")
+        vuetify3.VDivider(classes="mb-2")
         mesh_card()
         contour_card()
 
     with layout.content:
         # content components
-        with vuetify.VContainer(
+        with vuetify3.VContainer(
             fluid=True,
             classes="pa-0 fill-height",
         ):

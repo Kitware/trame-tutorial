@@ -172,6 +172,69 @@ cube_axes.SetFlyModeToOuterEdges()
 
 renderer.ResetCamera()
 
+
+# -----------------------------------------------------------------------------
+# Callbacks for VTK actors
+# -----------------------------------------------------------------------------
+
+
+# Representation Callback
+def update_representation(actor, mode):
+    property = actor.GetProperty()
+    if mode == Representation.Points:
+        property.SetRepresentationToPoints()
+        property.SetPointSize(5)
+        property.EdgeVisibilityOff()
+    elif mode == Representation.Wireframe:
+        property.SetRepresentationToWireframe()
+        property.SetPointSize(1)
+        property.EdgeVisibilityOff()
+    elif mode == Representation.Surface:
+        property.SetRepresentationToSurface()
+        property.SetPointSize(1)
+        property.EdgeVisibilityOff()
+    elif mode == Representation.SurfaceWithEdges:
+        property.SetRepresentationToSurface()
+        property.SetPointSize(1)
+        property.EdgeVisibilityOn()
+
+
+# Color By Callback
+def color_by_array(actor, array):
+    _min, _max = array.get("range")
+    mapper = actor.GetMapper()
+    mapper.SelectColorArray(array.get("text"))
+    mapper.GetLookupTable().SetRange(_min, _max)
+    if array.get("type") == vtkDataObject.FIELD_ASSOCIATION_POINTS:
+        mesh_mapper.SetScalarModeToUsePointFieldData()
+    else:
+        mesh_mapper.SetScalarModeToUseCellFieldData()
+    mapper.SetScalarVisibility(True)
+    mapper.SetUseLookupTableScalarRange(True)
+
+
+# Color Map Callback
+def use_preset(actor, preset):
+    lut = actor.GetMapper().GetLookupTable()
+    if preset == LookupTable.Rainbow:
+        lut.SetHueRange(0.666, 0.0)
+        lut.SetSaturationRange(1.0, 1.0)
+        lut.SetValueRange(1.0, 1.0)
+    elif preset == LookupTable.Inverted_Rainbow:
+        lut.SetHueRange(0.0, 0.666)
+        lut.SetSaturationRange(1.0, 1.0)
+        lut.SetValueRange(1.0, 1.0)
+    elif preset == LookupTable.Greyscale:
+        lut.SetHueRange(0.0, 0.0)
+        lut.SetSaturationRange(0.0, 0.0)
+        lut.SetValueRange(0.0, 1.0)
+    elif preset == LookupTable.Inverted_Greyscale:
+        lut.SetHueRange(0.0, 0.666)
+        lut.SetSaturationRange(0.0, 0.0)
+        lut.SetValueRange(1.0, 0.0)
+    lut.Build()
+
+
 # -----------------------------------------------------------------------------
 # Trame setup
 # -----------------------------------------------------------------------------
@@ -187,7 +250,7 @@ class App(TrameApp):
 # -----------------------------------------------------------------------------
 
     @change("cube_axes_visibility")
-    def update_cube_axes_visibility(self, cube_axes_visibility, **kwargs):
+    def update_cube_axes_visibility(self, cube_axes_visibility, **_):
         cube_axes.SetVisibility(cube_axes_visibility)
         self.ctrl.view_update()
 
@@ -215,98 +278,41 @@ class App(TrameApp):
         self.ctrl.view_update()
 
 
-    # Representation Callbacks
-    def update_representation(self, actor, mode):
-        property = actor.GetProperty()
-        if mode == Representation.Points:
-            property.SetRepresentationToPoints()
-            property.SetPointSize(5)
-            property.EdgeVisibilityOff()
-        elif mode == Representation.Wireframe:
-            property.SetRepresentationToWireframe()
-            property.SetPointSize(1)
-            property.EdgeVisibilityOff()
-        elif mode == Representation.Surface:
-            property.SetRepresentationToSurface()
-            property.SetPointSize(1)
-            property.EdgeVisibilityOff()
-        elif mode == Representation.SurfaceWithEdges:
-            property.SetRepresentationToSurface()
-            property.SetPointSize(1)
-            property.EdgeVisibilityOn()
-
-
     @change("mesh_representation")
     def update_mesh_representation(self, mesh_representation, **kwargs):
-        self.update_representation(mesh_actor, mesh_representation)
+        update_representation(mesh_actor, mesh_representation)
         self.ctrl.view_update()
 
 
     @change("contour_representation")
     def update_contour_representation(self, contour_representation, **kwargs):
-        self.update_representation(contour_actor, contour_representation)
+        update_representation(contour_actor, contour_representation)
         self.ctrl.view_update()
-
-
-    # Color By Callbacks
-    def color_by_array(self, actor, array):
-        _min, _max = array.get("range")
-        mapper = actor.GetMapper()
-        mapper.SelectColorArray(array.get("text"))
-        mapper.GetLookupTable().SetRange(_min, _max)
-        if array.get("type") == vtkDataObject.FIELD_ASSOCIATION_POINTS:
-            mesh_mapper.SetScalarModeToUsePointFieldData()
-        else:
-            mesh_mapper.SetScalarModeToUseCellFieldData()
-        mapper.SetScalarVisibility(True)
-        mapper.SetUseLookupTableScalarRange(True)
 
 
     @change("mesh_color_array_idx")
     def update_mesh_color_by_name(self, mesh_color_array_idx, **kwargs):
         array = dataset_arrays[mesh_color_array_idx]
-        self.color_by_array(mesh_actor, array)
+        color_by_array(mesh_actor, array)
         self.ctrl.view_update()
 
 
     @change("contour_color_array_idx")
     def update_contour_color_by_name(self, contour_color_array_idx, **kwargs):
         array = dataset_arrays[contour_color_array_idx]
-        self.color_by_array(contour_actor, array)
+        color_by_array(contour_actor, array)
         self.ctrl.view_update()
-
-
-    # Color Map Callbacks
-    def use_preset(self, actor, preset):
-        lut = actor.GetMapper().GetLookupTable()
-        if preset == LookupTable.Rainbow:
-            lut.SetHueRange(0.666, 0.0)
-            lut.SetSaturationRange(1.0, 1.0)
-            lut.SetValueRange(1.0, 1.0)
-        elif preset == LookupTable.Inverted_Rainbow:
-            lut.SetHueRange(0.0, 0.666)
-            lut.SetSaturationRange(1.0, 1.0)
-            lut.SetValueRange(1.0, 1.0)
-        elif preset == LookupTable.Greyscale:
-            lut.SetHueRange(0.0, 0.0)
-            lut.SetSaturationRange(0.0, 0.0)
-            lut.SetValueRange(0.0, 1.0)
-        elif preset == LookupTable.Inverted_Greyscale:
-            lut.SetHueRange(0.0, 0.666)
-            lut.SetSaturationRange(0.0, 0.0)
-            lut.SetValueRange(1.0, 0.0)
-        lut.Build()
 
 
     @change("mesh_color_preset")
     def update_mesh_color_preset(self, mesh_color_preset, **kwargs):
-        self.use_preset(mesh_actor, mesh_color_preset)
+        use_preset(mesh_actor, mesh_color_preset)
         self.ctrl.view_update()
 
 
     @change("contour_color_preset")
     def update_contour_color_preset(self, contour_color_preset, **kwargs):
-        self.use_preset(contour_actor, contour_color_preset)
+        use_preset(contour_actor, contour_color_preset)
         self.ctrl.view_update()
 
 

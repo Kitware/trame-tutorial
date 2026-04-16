@@ -367,7 +367,7 @@ class App(TrameApp):
             false_icon="mdi-cube-off-outline",
             classes="mx-1",
             hide_details=True,
-            dense=True,
+            density="compact",
         )
         v3.VCheckbox(
             v_model="theme",
@@ -377,7 +377,7 @@ class App(TrameApp):
             false_icon="mdi-lightbulb-outline",
             classes="mx-1",
             hide_details=True,
-            dense=True,
+            density="compact",
         )
         v3.VCheckbox(
             v_model=("viewMode", "local"),
@@ -387,7 +387,7 @@ class App(TrameApp):
             false_value="remote",
             classes="mx-1",
             hide_details=True,
-            dense=True,
+            density="compact",
         )
         with v3.VBtn(icon=True, click=self.ctrl.view_reset_camera):
             v3.VIcon("mdi-crop-free")
@@ -414,7 +414,7 @@ class App(TrameApp):
                 classes="grey lighten-1 py-1 grey--text text--darken-3",
                 style="user-select: none; cursor: pointer",
                 hide_details=True,
-                dense=True,
+                density="compact",
             )
             content = v3.VCardText(classes="py-2")
         return content
@@ -438,11 +438,11 @@ class App(TrameApp):
                 item_value="value",
                 label="Representation",
                 hide_details=True,
-                dense=True,
+                density="compact",
                 outlined=True,
                 classes="pt-1",
             )
-            with v3.VRow(classes="pt-2", dense=True):
+            with v3.VRow(classes="pt-2", density="compact"):
                 with v3.VCol(cols="6"):
                     v3.VSelect(
                         # Color By
@@ -452,7 +452,7 @@ class App(TrameApp):
                         item_title="text",
                         item_value="value",
                         hide_details=True,
-                        dense=True,
+                        density="compact",
                         outlined=True,
                         classes="pt-1",
                     )
@@ -473,7 +473,7 @@ class App(TrameApp):
                         item_title="text",
                         item_value="value",
                         hide_details=True,
-                        dense=True,
+                        density="compact",
                         outlined=True,
                         classes="pt-1",
                     )
@@ -486,7 +486,7 @@ class App(TrameApp):
                 label="Opacity",
                 classes="mt-1",
                 hide_details=True,
-                dense=True,
+                density="compact",
             )
 
 
@@ -500,7 +500,7 @@ class App(TrameApp):
                 item_title="text",
                 item_value="value",
                 hide_details=True,
-                dense=True,
+                density="compact",
                 outlined=True,
                 classes="pt-1",
             )
@@ -513,7 +513,7 @@ class App(TrameApp):
                 label="Value",
                 classes="my-1",
                 hide_details=True,
-                dense=True,
+                density="compact",
             )
             v3.VSelect(
                 # Representation
@@ -531,11 +531,11 @@ class App(TrameApp):
                 item_value="value",
                 label="Representation",
                 hide_details=True,
-                dense=True,
+                density="compact",
                 outlined=True,
                 classes="pt-1",
             )
-            with v3.VRow(classes="pt-2", dense=True):
+            with v3.VRow(classes="pt-2", density="compact"):
                 with v3.VCol(cols="6"):
                     v3.VSelect(
                         # Color By
@@ -545,7 +545,7 @@ class App(TrameApp):
                         item_title="text",
                         item_value="value",
                         hide_details=True,
-                        dense=True,
+                        density="compact",
                         outlined=True,
                         classes="pt-1",
                     )
@@ -566,7 +566,7 @@ class App(TrameApp):
                         item_title="text",
                         item_value="value",
                         hide_details=True,
-                        dense=True,
+                        density="compact",
                         outlined=True,
                         classes="pt-1",
                     )
@@ -579,7 +579,7 @@ class App(TrameApp):
                 label="Opacity",
                 classes="mt-1",
                 hide_details=True,
-                dense=True,
+                density="compact",
             )
 
 

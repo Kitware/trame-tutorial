@@ -57,7 +57,7 @@ class ConeApp(TrameApp):
                     max=60,
                     step=1,
                     hide_details=True,
-                    dense=True,
+                    density="compact",
                     style="max-width: 300px",
                 )
                 v3.VDivider(vertical=True, classes="mx-2")

@@ -1,6 +1,6 @@
-from trame.app import get_server
+from trame.app import TrameApp
 from trame.ui.vuetify3 import SinglePageLayout
-from trame.widgets import vtk, vuetify3
+from trame.widgets import vtk, vuetify3 as v3
 
 from vtkmodules.vtkFiltersSources import vtkConeSource
 from vtkmodules.vtkRenderingCore import (
@@ -12,66 +12,67 @@ from vtkmodules.vtkRenderingCore import (
 )
 
 # Required for interactor initialization
-from vtkmodules.vtkInteractionStyle import vtkInteractorStyleSwitch  # noqa
+from vtkmodules.vtkInteractionStyle import vtkInteractorStyleSwitch  # noqa: F401
 
 # Required for rendering initialization, not necessary for
 # local rendering, but doesn't hurt to include it
-import vtkmodules.vtkRenderingOpenGL2  # noqa
+import vtkmodules.vtkRenderingOpenGL2  # noqa: F401
 
+class AppButtons(TrameApp):
+    def __init__(self, server=None):
+        super().__init__(server)
+        self.vtk_pipeline()
+        self._build_ui()
 
-# -----------------------------------------------------------------------------
-# VTK pipeline
-# -----------------------------------------------------------------------------
+    def vtk_pipeline(self):
+        self.renderer = vtkRenderer()
+        self.renderWindow = vtkRenderWindow()
+        self.renderWindow.AddRenderer(self.renderer)
 
-renderer = vtkRenderer()
-renderWindow = vtkRenderWindow()
-renderWindow.AddRenderer(renderer)
+        self.renderWindowInteractor = vtkRenderWindowInteractor()
+        self.renderWindowInteractor.SetRenderWindow(self.renderWindow)
+        self.renderWindowInteractor.GetInteractorStyle().SetCurrentStyleToTrackballCamera()
 
-renderWindowInteractor = vtkRenderWindowInteractor()
-renderWindowInteractor.SetRenderWindow(renderWindow)
-renderWindowInteractor.GetInteractorStyle().SetCurrentStyleToTrackballCamera()
+        self.cone_source = vtkConeSource()
+        self.mapper = vtkPolyDataMapper()
+        self.mapper.SetInputConnection(self.cone_source.GetOutputPort())
+        self.actor = vtkActor()
+        self.actor.SetMapper(self.mapper)
 
-cone_source = vtkConeSource()
-mapper = vtkPolyDataMapper()
-mapper.SetInputConnection(cone_source.GetOutputPort())
-actor = vtkActor()
-actor.SetMapper(mapper)
+        self.renderer.AddActor(self.actor)
+        self.renderer.ResetCamera()
 
-renderer.AddActor(actor)
-renderer.ResetCamera()
+    def _build_ui(self):
+        with SinglePageLayout(self.server, theme=("theme", "light")) as self.ui:
+            self.ui.title.set_text("Hello trame")
 
-# -----------------------------------------------------------------------------
-# Trame
-# -----------------------------------------------------------------------------
+            with self.ui.content:
+                with v3.VContainer(
+                    fluid=True,
+                    classes="pa-0 fill-height",
+                ):
+                    self.view = vtk.VtkLocalView(self.renderWindow)
+                    self.ctrl.view_reset_camera = self.view.reset_camera
+                    self.ctrl.view_update = self.view.update
 
-server = get_server()
-ctrl = server.controller
-
-with SinglePageLayout(server, theme=("theme", "light")) as layout:
-    layout.title.set_text("Hello trame")
-
-    with layout.content:
-        with vuetify3.VContainer(
-            fluid=True,
-            classes="pa-0 fill-height",
-        ):
-            view = vtk.VtkLocalView(renderWindow)
-            ctrl.view_reset_camera = view.reset_camera
-
-    with layout.toolbar:
-        vuetify3.VSpacer()
-        vuetify3.VSwitch(
-            v_model="theme",
-            false_value="light",
-            true_value="dark",
-            hide_details=True,
-            density="compact",
-        )
-        vuetify3.VBtn(icon="mdi-crop-free", click=ctrl.view_reset_camera)
+            with self.ui.toolbar:
+                v3.VSpacer()
+                v3.VSwitch(
+                    v_model="theme",
+                    false_value="light",
+                    true_value="dark",
+                    hide_details=True,
+                    density="compact",
+                )
+                v3.VBtn(icon="mdi-crop-free", click=self.ctrl.view_reset_camera)
 
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 
+def main():
+    app = AppButtons()
+    app.server.start()
+
 if __name__ == "__main__":
-    server.start()
+    main()

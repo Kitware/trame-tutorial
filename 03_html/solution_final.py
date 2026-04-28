@@ -94,8 +94,7 @@ with SinglePageLayout(server, theme=("theme", "light")) as layout:
             density="compact",
             style="max-width: 300px",
         )
-        with vuetify3.VBtn(icon=True, click=reset_resolution):
-            vuetify3.VIcon("mdi-restore")
+        vuetify3.VBtn(icon="mdi-restore", click=reset_resolution)
 
         vuetify3.VDivider(vertical=True, classes="mx-2")
 
@@ -106,8 +105,7 @@ with SinglePageLayout(server, theme=("theme", "light")) as layout:
             hide_details=True,
             density="compact",
         )
-        with vuetify3.VBtn(icon=True, click=ctrl.view_reset_camera):
-            vuetify3.VIcon("mdi-crop-free")
+        vuetify3.VBtn(icon="mdi-crop-free", click=ctrl.view_reset_camera)
 
 # -----------------------------------------------------------------------------
 # Main

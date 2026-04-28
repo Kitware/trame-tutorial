@@ -389,8 +389,7 @@ class App(TrameApp):
             hide_details=True,
             density="compact",
         )
-        with v3.VBtn(icon=True, click=self.ctrl.view_reset_camera):
-            v3.VIcon("mdi-crop-free")
+        v3.VBtn(icon="mdi-crop-free", click=self.ctrl.view_reset_camera)
 
 
     def pipeline_widget(self):

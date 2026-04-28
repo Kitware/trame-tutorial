@@ -2,7 +2,6 @@ from trame.app import TrameApp
 from trame.ui.vuetify3 import SinglePageLayout
 from trame.widgets import vuetify3 as v3
 from trame.widgets import paraview, client
-from trame.decorators import change
 
 from pathlib import Path
 
@@ -16,9 +15,13 @@ class StateLoaderApp(TrameApp):
 
     def __init__(self, server=None):
         super().__init__(server)
+        self.server.cli.add_argument("--data", help="Path to state file", dest="data")
 
         # Preload paraview modules onto server
         paraview.initialize(self.server)
+
+        self.ctrl.on_server_ready.add(self.load_data)
+        self._build_ui()
 
 
 # -----------------------------------------------------------------------------
@@ -26,7 +29,7 @@ class StateLoaderApp(TrameApp):
 # -----------------------------------------------------------------------------
 
 
-    def load_data(self, **kwargs):
+    def load_data(self, **_kwargs):
         # CLI
         args, _ = self.server.cli.parse_known_args()
 
@@ -44,18 +47,15 @@ class StateLoaderApp(TrameApp):
         simple.Render(self.view)
 
         # HTML
-        with SinglePageLayout(self.server) as layout:
-            layout.icon.click = self.ctrl.view_reset_camera
-            layout.title.set_text("ParaView State Viewer")
+        with SinglePageLayout(self.server) as self.ui:
+            self.ui.icon.click = self.ctrl.view_reset_camera
+            self.ui.title.set_text("ParaView State Viewer")
 
-            with layout.content:
+            with self.ui.content:
                 with v3.VContainer(fluid=True, classes="pa-0 fill-height"):
                     html_view = paraview.VtkRemoteView(self.view)
                     self.ctrl.view_reset_camera = html_view.reset_camera
-                    self.ctrl.view_update = html_view.update
-
-
-        self.ctrl.on_server_ready.add(self.load_data)
+                    self.ctrl.view_update = html_view.update 
 
 # -----------------------------------------------------------------------------
 # GUI
@@ -69,7 +69,7 @@ class StateLoaderApp(TrameApp):
             self.ui.title.set_text("ParaView State Viewer")
 
             with self.ui.content:
-                with self.vuetify3.VContainer(fluid=True, classes="pa-0 fill-height"):
+                with v3.VContainer(fluid=True, classes="pa-0 fill-height"):
                     client.Loading("Loading state")
 
 

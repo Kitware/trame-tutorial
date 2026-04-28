@@ -13,6 +13,9 @@ from paraview import simple
 class ConeApp(TrameApp):
     def __init__(self, server=None):   
         super().__init__(server)
+
+        self.DEFAULT_RESOLUTION = 6
+
         self._init_paraview()
         self._build_ui()
 
@@ -21,8 +24,6 @@ class ConeApp(TrameApp):
 # -----------------------------------------------------------------------------
 
     def _init_paraview(self):
-        self.DEFAULT_RESOLUTION = 6
-
         self.cone = simple.Cone()
         self.representation = simple.Show(self.cone)
         self.view = simple.Render()
@@ -61,8 +62,7 @@ class ConeApp(TrameApp):
                     style="max-width: 300px",
                 )
                 v3.VDivider(vertical=True, classes="mx-2")
-                with v3.VBtn(icon=True, click=self.update_reset_resolution):
-                    v3.VIcon("mdi-undo-variant")
+                v3.VBtn(icon="mdi-undo-variant", click=self.update_reset_resolution)
 
             with self.ui.content:
                 with v3.VContainer(

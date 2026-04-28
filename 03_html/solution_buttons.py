@@ -67,8 +67,7 @@ with SinglePageLayout(server, theme=("theme", "light")) as layout:
             hide_details=True,
             density="compact",
         )
-        with vuetify3.VBtn(icon=True, click=ctrl.view_reset_camera):
-            vuetify3.VIcon("mdi-crop-free")
+        vuetify3.VBtn(icon="mdi-crop-free", click=ctrl.view_reset_camera)
 
 # -----------------------------------------------------------------------------
 # Main

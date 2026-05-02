@@ -1,8 +1,10 @@
 import os
 
-from trame.app import get_server
-from trame.ui.vuetify import SinglePageWithDrawerLayout
-from trame.widgets import vtk, vuetify, trame
+from trame.app import TrameApp
+from trame.ui.vuetify3 import SinglePageWithDrawerLayout
+from trame.widgets import vuetify3 as v3
+from trame.widgets import vtk, trame
+from trame.decorators import change
 
 from trame_vtk.modules.vtk.serializers import configure_serializer
 
@@ -170,50 +172,13 @@ cube_axes.SetFlyModeToOuterEdges()
 
 renderer.ResetCamera()
 
-# -----------------------------------------------------------------------------
-# Trame setup
-# -----------------------------------------------------------------------------
-
-server = get_server(client_type="vue2")
-state, ctrl = server.state, server.controller
-
-state.setdefault("active_ui", None)
 
 # -----------------------------------------------------------------------------
-# Callbacks
+# Callbacks for VTK actors
 # -----------------------------------------------------------------------------
 
 
-@state.change("cube_axes_visibility")
-def update_cube_axes_visibility(cube_axes_visibility, **kwargs):
-    cube_axes.SetVisibility(cube_axes_visibility)
-    ctrl.view_update()
-
-
-# Selection Change
-def actives_change(ids):
-    _id = ids[0]
-    if _id == "1":  # Mesh
-        state.active_ui = "mesh"
-    elif _id == "2":  # Contour
-        state.active_ui = "contour"
-    else:
-        state.active_ui = "nothing"
-
-
-# Visibility Change
-def visibility_change(event):
-    _id = event["id"]
-    _visibility = event["visible"]
-
-    if _id == "1":  # Mesh
-        mesh_actor.SetVisibility(_visibility)
-    elif _id == "2":  # Contour
-        contour_actor.SetVisibility(_visibility)
-    ctrl.view_update()
-
-
-# Representation Callbacks
+# Representation Callback
 def update_representation(actor, mode):
     property = actor.GetProperty()
     if mode == Representation.Points:
@@ -234,19 +199,7 @@ def update_representation(actor, mode):
         property.EdgeVisibilityOn()
 
 
-@state.change("mesh_representation")
-def update_mesh_representation(mesh_representation, **kwargs):
-    update_representation(mesh_actor, mesh_representation)
-    ctrl.view_update()
-
-
-@state.change("contour_representation")
-def update_contour_representation(contour_representation, **kwargs):
-    update_representation(contour_actor, contour_representation)
-    ctrl.view_update()
-
-
-# Color By Callbacks
+# Color By Callback
 def color_by_array(actor, array):
     _min, _max = array.get("range")
     mapper = actor.GetMapper()
@@ -260,21 +213,7 @@ def color_by_array(actor, array):
     mapper.SetUseLookupTableScalarRange(True)
 
 
-@state.change("mesh_color_array_idx")
-def update_mesh_color_by_name(mesh_color_array_idx, **kwargs):
-    array = dataset_arrays[mesh_color_array_idx]
-    color_by_array(mesh_actor, array)
-    ctrl.view_update()
-
-
-@state.change("contour_color_array_idx")
-def update_contour_color_by_name(contour_color_array_idx, **kwargs):
-    array = dataset_arrays[contour_color_array_idx]
-    color_by_array(contour_actor, array)
-    ctrl.view_update()
-
-
-# Color Map Callbacks
+# Color Map Callback
 def use_preset(actor, preset):
     lut = actor.GetMapper().GetLookupTable()
     if preset == LookupTable.Rainbow:
@@ -296,55 +235,124 @@ def use_preset(actor, preset):
     lut.Build()
 
 
-@state.change("mesh_color_preset")
-def update_mesh_color_preset(mesh_color_preset, **kwargs):
-    use_preset(mesh_actor, mesh_color_preset)
-    ctrl.view_update()
+# -----------------------------------------------------------------------------
+# Trame setup
+# -----------------------------------------------------------------------------
+
+class App(TrameApp):
+    def __init__(self, server=None):
+        super().__init__(server)
+        self._build_ui()
+        self.state.setdefault("active_ui", None)
+
+# -----------------------------------------------------------------------------
+# Callbacks
+# -----------------------------------------------------------------------------
+
+    @change("cube_axes_visibility")
+    def update_cube_axes_visibility(self, cube_axes_visibility, **_):
+        cube_axes.SetVisibility(cube_axes_visibility)
+        self.ctrl.view_update()
 
 
-@state.change("contour_color_preset")
-def update_contour_color_preset(contour_color_preset, **kwargs):
-    use_preset(contour_actor, contour_color_preset)
-    ctrl.view_update()
+    # Selection Change
+    def actives_change(self, ids):
+        _id = ids[0]
+        if _id == "1":  # Mesh
+            self.state.active_ui = "mesh"
+        elif _id == "2":  # Contour
+            self.state.active_ui = "contour"
+        else:
+            self.state.active_ui = "nothing"
 
 
-# Opacity Callbacks
-@state.change("mesh_opacity")
-def update_mesh_opacity(mesh_opacity, **kwargs):
-    mesh_actor.GetProperty().SetOpacity(mesh_opacity)
-    ctrl.view_update()
+    # Visibility Change
+    def visibility_change(self, event):
+        _id = event["id"]
+        _visibility = event["visible"]
+
+        if _id == "1":  # Mesh
+            mesh_actor.SetVisibility(_visibility)
+        elif _id == "2":  # Contour
+            contour_actor.SetVisibility(_visibility)
+        self.ctrl.view_update()
 
 
-@state.change("contour_opacity")
-def update_contour_opacity(contour_opacity, **kwargs):
-    contour_actor.GetProperty().SetOpacity(contour_opacity)
-    ctrl.view_update()
+    @change("mesh_representation")
+    def update_mesh_representation(self, mesh_representation, **kwargs):
+        update_representation(mesh_actor, mesh_representation)
+        self.ctrl.view_update()
 
 
-# Contour Callbacks
-@state.change("contour_by_array_idx")
-def update_contour_by(contour_by_array_idx, **kwargs):
-    array = dataset_arrays[contour_by_array_idx]
-    contour_min, contour_max = array.get("range")
-    contour_step = 0.01 * (contour_max - contour_min)
-    contour_value = 0.5 * (contour_max + contour_min)
-    contour.SetInputArrayToProcess(0, 0, 0, array.get("type"), array.get("text"))
-    contour.SetValue(0, contour_value)
-
-    # Update UI
-    state.contour_min = contour_min
-    state.contour_max = contour_max
-    state.contour_value = contour_value
-    state.contour_step = contour_step
-
-    # Update View
-    ctrl.view_update()
+    @change("contour_representation")
+    def update_contour_representation(self, contour_representation, **kwargs):
+        update_representation(contour_actor, contour_representation)
+        self.ctrl.view_update()
 
 
-@state.change("contour_value")
-def update_contour_value(contour_value, **kwargs):
-    contour.SetValue(0, float(contour_value))
-    ctrl.view_update()
+    @change("mesh_color_array_idx")
+    def update_mesh_color_by_name(self, mesh_color_array_idx, **kwargs):
+        array = dataset_arrays[mesh_color_array_idx]
+        color_by_array(mesh_actor, array)
+        self.ctrl.view_update()
+
+
+    @change("contour_color_array_idx")
+    def update_contour_color_by_name(self, contour_color_array_idx, **kwargs):
+        array = dataset_arrays[contour_color_array_idx]
+        color_by_array(contour_actor, array)
+        self.ctrl.view_update()
+
+
+    @change("mesh_color_preset")
+    def update_mesh_color_preset(self, mesh_color_preset, **kwargs):
+        use_preset(mesh_actor, mesh_color_preset)
+        self.ctrl.view_update()
+
+
+    @change("contour_color_preset")
+    def update_contour_color_preset(self, contour_color_preset, **kwargs):
+        use_preset(contour_actor, contour_color_preset)
+        self.ctrl.view_update()
+
+
+    # Opacity Callbacks
+    @change("mesh_opacity")
+    def update_mesh_opacity(self, mesh_opacity, **kwargs):
+        mesh_actor.GetProperty().SetOpacity(mesh_opacity)
+        self.ctrl.view_update()
+
+
+    @change("contour_opacity")
+    def update_contour_opacity(self, contour_opacity, **kwargs):
+        contour_actor.GetProperty().SetOpacity(contour_opacity)
+        self.ctrl.view_update()
+
+
+    # Contour Callbacks
+    @change("contour_by_array_idx")
+    def update_contour_by(self, contour_by_array_idx, **kwargs):
+        array = dataset_arrays[contour_by_array_idx]
+        contour_min, contour_max = array.get("range")
+        contour_step = 0.01 * (contour_max - contour_min)
+        contour_value = 0.5 * (contour_max + contour_min)
+        contour.SetInputArrayToProcess(0, 0, 0, array.get("type"), array.get("text"))
+        contour.SetValue(0, contour_value)
+
+        # Update UI
+        self.state.contour_min = contour_min
+        self.state.contour_max = contour_max
+        self.state.contour_value = contour_value
+        self.state.contour_step = contour_step
+
+        # Update View
+        self.ctrl.view_update()
+
+
+    @change("contour_value")
+    def update_contour_value(self, contour_value, **kwargs):
+        contour.SetValue(0, float(contour_value))
+        self.ctrl.view_update()
 
 
 # -----------------------------------------------------------------------------
@@ -352,251 +360,271 @@ def update_contour_value(contour_value, **kwargs):
 # -----------------------------------------------------------------------------
 
 
-def standard_buttons():
-    vuetify.VCheckbox(
-        v_model=("cube_axes_visibility", True),
-        on_icon="mdi-cube-outline",
-        off_icon="mdi-cube-off-outline",
-        classes="mx-1",
-        hide_details=True,
-        dense=True,
-    )
-    vuetify.VCheckbox(
-        v_model="$vuetify.theme.dark",
-        on_icon="mdi-lightbulb-off-outline",
-        off_icon="mdi-lightbulb-outline",
-        classes="mx-1",
-        hide_details=True,
-        dense=True,
-    )
-    vuetify.VCheckbox(
-        v_model=("viewMode", "local"),
-        on_icon="mdi-lan-disconnect",
-        off_icon="mdi-lan-connect",
-        true_value="local",
-        false_value="remote",
-        classes="mx-1",
-        hide_details=True,
-        dense=True,
-    )
-    with vuetify.VBtn(icon=True, click="$refs.view.resetCamera()"):
-        vuetify.VIcon("mdi-crop-free")
-
-
-def pipeline_widget():
-    trame.GitTree(
-        sources=(
-            "pipeline",
-            [
-                {"id": "1", "parent": "0", "visible": 1, "name": "Mesh"},
-                {"id": "2", "parent": "1", "visible": 1, "name": "Contour"},
-            ],
-        ),
-        actives_change=(actives_change, "[$event]"),
-        visibility_change=(visibility_change, "[$event]"),
-    )
-
-
-def ui_card(title, ui_name):
-    with vuetify.VCard(v_show=f"active_ui == '{ui_name}'"):
-        vuetify.VCardTitle(
-            title,
-            classes="grey lighten-1 py-1 grey--text text--darken-3",
-            style="user-select: none; cursor: pointer",
+    def standard_buttons(self):
+        v3.VCheckbox(
+            v_model=("cube_axes_visibility", True),
+            true_icon="mdi-cube-outline",
+            false_icon="mdi-cube-off-outline",
+            classes="mx-1",
             hide_details=True,
-            dense=True,
+            density="compact",
         )
-        content = vuetify.VCardText(classes="py-2")
-    return content
+        v3.VCheckbox(
+            v_model="theme",
+            true_value="dark",
+            false_value="light",
+            true_icon="mdi-lightbulb-off-outline",
+            false_icon="mdi-lightbulb-outline",
+            classes="mx-1",
+            hide_details=True,
+            density="compact",
+        )
+        v3.VCheckbox(
+            v_model=("viewMode", "local"),
+            true_icon="mdi-lan-disconnect",
+            false_icon="mdi-lan-connect",
+            true_value="local",
+            false_value="remote",
+            classes="mx-1",
+            hide_details=True,
+            density="compact",
+        )
+        v3.VBtn(icon="mdi-crop-free", click=self.ctrl.view_reset_camera)
 
 
-def mesh_card():
-    with ui_card(title="Mesh", ui_name="mesh"):
-        vuetify.VSelect(
-            # Representation
-            v_model=("mesh_representation", Representation.Surface),
-            items=(
-                "representations",
+    def pipeline_widget(self):
+        trame.GitTree(
+            sources=(
+                "pipeline",
                 [
-                    {"text": "Points", "value": 0},
-                    {"text": "Wireframe", "value": 1},
-                    {"text": "Surface", "value": 2},
-                    {"text": "SurfaceWithEdges", "value": 3},
+                    {"id": "1", "parent": "0", "visible": 1, "name": "Mesh"},
+                    {"id": "2", "parent": "1", "visible": 1, "name": "Contour"},
                 ],
             ),
-            label="Representation",
-            hide_details=True,
-            dense=True,
-            outlined=True,
-            classes="pt-1",
-        )
-        with vuetify.VRow(classes="pt-2", dense=True):
-            with vuetify.VCol(cols="6"):
-                vuetify.VSelect(
-                    # Color By
-                    label="Color by",
-                    v_model=("mesh_color_array_idx", 0),
-                    items=("array_list", dataset_arrays),
-                    hide_details=True,
-                    dense=True,
-                    outlined=True,
-                    classes="pt-1",
-                )
-            with vuetify.VCol(cols="6"):
-                vuetify.VSelect(
-                    # Color Map
-                    label="Colormap",
-                    v_model=("mesh_color_preset", LookupTable.Rainbow),
-                    items=(
-                        "colormaps",
-                        [
-                            {"text": "Rainbow", "value": 0},
-                            {"text": "Inv Rainbow", "value": 1},
-                            {"text": "Greyscale", "value": 2},
-                            {"text": "Inv Greyscale", "value": 3},
-                        ],
-                    ),
-                    hide_details=True,
-                    dense=True,
-                    outlined=True,
-                    classes="pt-1",
-                )
-        vuetify.VSlider(
-            # Opacity
-            v_model=("mesh_opacity", 1.0),
-            min=0,
-            max=1,
-            step=0.1,
-            label="Opacity",
-            classes="mt-1",
-            hide_details=True,
-            dense=True,
+            actives_change=(self.actives_change, "[$event]"),
+            visibility_change=(self.visibility_change, "[$event]"),
         )
 
 
-def contour_card():
-    with ui_card(title="Contour", ui_name="contour"):
-        vuetify.VSelect(
-            # Contour By
-            label="Contour by",
-            v_model=("contour_by_array_idx", 0),
-            items=("array_list", dataset_arrays),
-            hide_details=True,
-            dense=True,
-            outlined=True,
-            classes="pt-1",
-        )
-        vuetify.VSlider(
-            # Contour Value
-            v_model=("contour_value", contour_value),
-            min=("contour_min", default_min),
-            max=("contour_max", default_max),
-            step=("contour_step", 0.01 * (default_max - default_min)),
-            label="Value",
-            classes="my-1",
-            hide_details=True,
-            dense=True,
-        )
-        vuetify.VSelect(
-            # Representation
-            v_model=("contour_representation", Representation.Surface),
-            items=(
-                "representations",
-                [
-                    {"text": "Points", "value": 0},
-                    {"text": "Wireframe", "value": 1},
-                    {"text": "Surface", "value": 2},
-                    {"text": "SurfaceWithEdges", "value": 3},
-                ],
-            ),
-            label="Representation",
-            hide_details=True,
-            dense=True,
-            outlined=True,
-            classes="pt-1",
-        )
-        with vuetify.VRow(classes="pt-2", dense=True):
-            with vuetify.VCol(cols="6"):
-                vuetify.VSelect(
-                    # Color By
-                    label="Color by",
-                    v_model=("contour_color_array_idx", 0),
-                    items=("array_list", dataset_arrays),
-                    hide_details=True,
-                    dense=True,
-                    outlined=True,
-                    classes="pt-1",
-                )
-            with vuetify.VCol(cols="6"):
-                vuetify.VSelect(
-                    # Color Map
-                    label="Colormap",
-                    v_model=("contour_color_preset", LookupTable.Rainbow),
-                    items=(
-                        "colormaps",
-                        [
-                            {"text": "Rainbow", "value": 0},
-                            {"text": "Inv Rainbow", "value": 1},
-                            {"text": "Greyscale", "value": 2},
-                            {"text": "Inv Greyscale", "value": 3},
-                        ],
-                    ),
-                    hide_details=True,
-                    dense=True,
-                    outlined=True,
-                    classes="pt-1",
-                )
-        vuetify.VSlider(
-            # Opacity
-            v_model=("contour_opacity", 1.0),
-            min=0,
-            max=1,
-            step=0.1,
-            label="Opacity",
-            classes="mt-1",
-            hide_details=True,
-            dense=True,
-        )
+    def ui_card(self, title, ui_name):
+        with v3.VCard(v_show=f"active_ui == '{ui_name}'"):
+            v3.VCardTitle(
+                title,
+                classes="grey lighten-1 py-1 grey--text text--darken-3",
+                style="user-select: none; cursor: pointer",
+                hide_details=True,
+                density="compact",
+            )
+            content = v3.VCardText(classes="py-2")
+        return content
+
+
+    def mesh_card(self):
+        with self.ui_card(title="Mesh", ui_name="mesh"):
+            v3.VSelect(
+                # Representation
+                v_model=("mesh_representation", Representation.Surface),
+                items=(
+                    "representations",
+                    [
+                        {"text": "Points", "value": 0},
+                        {"text": "Wireframe", "value": 1},
+                        {"text": "Surface", "value": 2},
+                        {"text": "SurfaceWithEdges", "value": 3},
+                    ],
+                ),
+                item_title="text",
+                item_value="value",
+                label="Representation",
+                hide_details=True,
+                density="compact",
+                outlined=True,
+                classes="pt-1",
+            )
+            with v3.VRow(classes="pt-2", density="compact"):
+                with v3.VCol(cols="6"):
+                    v3.VSelect(
+                        # Color By
+                        label="Color by",
+                        v_model=("mesh_color_array_idx", 0),
+                        items=("array_list", dataset_arrays),
+                        item_title="text",
+                        item_value="value",
+                        hide_details=True,
+                        density="compact",
+                        outlined=True,
+                        classes="pt-1",
+                    )
+                with v3.VCol(cols="6"):
+                    v3.VSelect(
+                        # Color Map
+                        label="Colormap",
+                        v_model=("mesh_color_preset", LookupTable.Rainbow),
+                        items=(
+                            "colormaps",
+                            [
+                                {"text": "Rainbow", "value": 0},
+                                {"text": "Inv Rainbow", "value": 1},
+                                {"text": "Greyscale", "value": 2},
+                                {"text": "Inv Greyscale", "value": 3},
+                            ],
+                        ),
+                        item_title="text",
+                        item_value="value",
+                        hide_details=True,
+                        density="compact",
+                        outlined=True,
+                        classes="pt-1",
+                    )
+            v3.VSlider(
+                # Opacity
+                v_model=("mesh_opacity", 1.0),
+                min=0,
+                max=1,
+                step=0.1,
+                label="Opacity",
+                classes="mt-1",
+                hide_details=True,
+                density="compact",
+            )
+
+
+    def contour_card(self):
+        with self.ui_card(title="Contour", ui_name="contour"):
+            v3.VSelect(
+                # Contour By
+                label="Contour by",
+                v_model=("contour_by_array_idx", 0),
+                items=("array_list", dataset_arrays),
+                item_title="text",
+                item_value="value",
+                hide_details=True,
+                density="compact",
+                outlined=True,
+                classes="pt-1",
+            )
+            v3.VSlider(
+                # Contour Value
+                v_model=("contour_value", contour_value),
+                min=("contour_min", default_min),
+                max=("contour_max", default_max),
+                step=("contour_step", 0.01 * (default_max - default_min)),
+                label="Value",
+                classes="my-1",
+                hide_details=True,
+                density="compact",
+            )
+            v3.VSelect(
+                # Representation
+                v_model=("contour_representation", Representation.Surface),
+                items=(
+                    "representations",
+                    [
+                        {"text": "Points", "value": 0},
+                        {"text": "Wireframe", "value": 1},
+                        {"text": "Surface", "value": 2},
+                        {"text": "SurfaceWithEdges", "value": 3},
+                    ],
+                ),
+                item_title="text",
+                item_value="value",
+                label="Representation",
+                hide_details=True,
+                density="compact",
+                outlined=True,
+                classes="pt-1",
+            )
+            with v3.VRow(classes="pt-2", density="compact"):
+                with v3.VCol(cols="6"):
+                    v3.VSelect(
+                        # Color By
+                        label="Color by",
+                        v_model=("contour_color_array_idx", 0),
+                        items=("array_list", dataset_arrays),
+                        item_title="text",
+                        item_value="value",
+                        hide_details=True,
+                        density="compact",
+                        outlined=True,
+                        classes="pt-1",
+                    )
+                with v3.VCol(cols="6"):
+                    v3.VSelect(
+                        # Color Map
+                        label="Colormap",
+                        v_model=("contour_color_preset", LookupTable.Rainbow),
+                        items=(
+                            "colormaps",
+                            [
+                                {"text": "Rainbow", "value": 0},
+                                {"text": "Inv Rainbow", "value": 1},
+                                {"text": "Greyscale", "value": 2},
+                                {"text": "Inv Greyscale", "value": 3},
+                            ],
+                        ),
+                        item_title="text",
+                        item_value="value",
+                        hide_details=True,
+                        density="compact",
+                        outlined=True,
+                        classes="pt-1",
+                    )
+            v3.VSlider(
+                # Opacity
+                v_model=("contour_opacity", 1.0),
+                min=0,
+                max=1,
+                step=0.1,
+                label="Opacity",
+                classes="mt-1",
+                hide_details=True,
+                density="compact",
+            )
 
 
 # -----------------------------------------------------------------------------
 # GUI
 # -----------------------------------------------------------------------------
 
-with SinglePageWithDrawerLayout(server) as layout:
-    layout.title.set_text("Viewer")
+    def _build_ui(self):
+        with SinglePageWithDrawerLayout(self.server, theme=("theme", "light")) as self.ui:
+            self.ui.title.set_text("Viewer")
 
-    with layout.toolbar:
-        # toolbar components
-        vuetify.VSpacer()
-        vuetify.VDivider(vertical=True, classes="mx-2")
-        standard_buttons()
+            with self.ui.toolbar:
+                # toolbar components
+                v3.VSpacer()
+                v3.VDivider(vertical=True, classes="mx-2")
+                self.standard_buttons()
 
-    with layout.drawer as drawer:
-        # drawer components
-        drawer.width = 325
-        pipeline_widget()
-        vuetify.VDivider(classes="mb-2")
-        mesh_card()
-        contour_card()
+            with self.ui.drawer as drawer:
+                # drawer components
+                drawer.width = 325
+                self.pipeline_widget()
+                v3.VDivider(classes="mb-2")
+                self.mesh_card()
+                self.contour_card()
 
-    with layout.content:
-        # content components
-        with vuetify.VContainer(
-            fluid=True,
-            classes="pa-0 fill-height",
-        ):
-            # view = vtk.VtkRemoteView(renderWindow, interactive_ratio=1)
-            # view = vtk.VtkLocalView(renderWindow)
-            view = vtk.VtkRemoteLocalView(
-                renderWindow, namespace="view", mode="local", interactive_ratio=1
-            )
-            ctrl.view_update = view.update
-            ctrl.view_reset_camera = view.reset_camera
+            with self.ui.content:
+                # content components
+                with v3.VContainer(
+                    fluid=True,
+                    classes="pa-0 fill-height",
+                ):
+                    # view = vtk.VtkRemoteView(renderWindow, interactive_ratio=1)
+                    # view = vtk.VtkLocalView(renderWindow)
+                    view = vtk.VtkRemoteLocalView(
+                        renderWindow, namespace="view", mode="local", interactive_ratio=1
+                    )
+                    self.ctrl.view_update = view.update
+                    self.ctrl.view_reset_camera = view.reset_camera
 
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 
+def main():
+    app = App()
+    app.server.start()
+
 if __name__ == "__main__":
-    server.start()
+    main()

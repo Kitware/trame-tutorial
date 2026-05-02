@@ -1,8 +1,10 @@
 import os
 
-from trame.app import get_server
-from trame.ui.vuetify import SinglePageLayout
-from trame.widgets import vtk, vuetify
+from trame.app import TrameApp
+from trame.ui.vuetify3 import SinglePageLayout
+from trame.widgets import vuetify3 as v3
+from trame.widgets import vtk, trame
+from trame.decorators import change
 
 from vtkmodules.vtkRenderingCore import (
     vtkActor,
@@ -62,8 +64,9 @@ renderer.ResetCamera()
 # Trame setup
 # -----------------------------------------------------------------------------
 
-server = get_server(client_type="vue2")
-state, ctrl = server.state, server.controller
+class App(TrameApp):
+    def __init__(self, server=None):
+        super().__init__(server)
 
 # -----------------------------------------------------------------------------
 # Callbacks
@@ -77,26 +80,31 @@ state, ctrl = server.state, server.controller
 # GUI
 # -----------------------------------------------------------------------------
 
-with SinglePageLayout(server) as layout:
-    layout.title.set_text("Viewer")
+    def _build_ui(self):
+        with SinglePageLayout(self.server) as self.ui:
+            self.ui.title.set_text("Viewer")
 
-    with layout.toolbar:
-        # toolbar components
-        pass
+            with self.ui.toolbar:
+                # toolbar components
+                pass
 
-    with layout.content:
-        # content components
-        with vuetify.VContainer(
-            fluid=True,
-            classes="pa-0 fill-height",
-        ):
-            view = vtk.VtkLocalView(renderWindow)
-            ctrl.view_update = view.update
-            ctrl.view_reset_camera = view.reset_camera
+            with self.ui.content:
+                # content components
+                with v3.VContainer(
+                    fluid=True,
+                    classes="pa-0 fill-height",
+                ):
+                    view = vtk.VtkLocalView(renderWindow)
+                    self.ctrl.view_update = view.update
+                    self.ctrl.view_reset_camera = view.reset_camera
 
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 
+def main():
+    app = App()
+    app.server.start()
+
 if __name__ == "__main__":
-    server.start()
+    main()

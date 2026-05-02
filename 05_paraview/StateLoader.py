@@ -1,76 +1,85 @@
-from paraview.web import venv  # Available in PV 5.10-RC2+
-from paraview import simple
+from trame.app import TrameApp
+from trame.ui.vuetify3 import SinglePageLayout
+from trame.widgets import vuetify3 as v3
+from trame.widgets import paraview, client
 
 from pathlib import Path
-from trame.app import get_server
-from trame.widgets import vuetify, paraview, client
-from trame.ui.vuetify import SinglePageLayout
+
+from paraview import simple
 
 # -----------------------------------------------------------------------------
 # Trame setup
 # -----------------------------------------------------------------------------
 
-server = get_server(client_type = "vue2")
-state, ctrl = server.state, server.controller
+class StateLoaderApp(TrameApp):
 
-# Preload paraview modules onto server
-paraview.initialize(server)
+    def __init__(self, server=None):
+        super().__init__(server)
+        self.server.cli.add_argument("--data", help="Path to state file", dest="data")
+
+        # Preload paraview modules onto server
+        paraview.initialize(self.server)
+
+        self.ctrl.on_server_ready.add(self.load_data)
+        self._build_ui()
+
 
 # -----------------------------------------------------------------------------
 # ParaView code
 # -----------------------------------------------------------------------------
 
 
-def load_data(**kwargs):
-    # CLI
-    args, _ = server.cli.parse_known_args()
+    def load_data(self, **_kwargs):
+        # CLI
+        args, _ = self.server.cli.parse_known_args()
 
-    full_path = str(Path(args.data).resolve().absolute())
-    working_directory = str(Path(args.data).parent.resolve().absolute())
+        full_path = str(Path(args.data).resolve().absolute())
+        working_directory = str(Path(args.data).parent.resolve().absolute())
 
-    # ParaView
-    simple.LoadState(
-        full_path,
-        data_directory=working_directory,
-        restrict_to_data_directory=True,
-    )
-    view = simple.GetActiveView()
-    view.MakeRenderWindowInteractor(True)
-    simple.Render(view)
+        # ParaView
+        simple.LoadState(
+            full_path,
+            data_directory=working_directory,
+            restrict_to_data_directory=True,
+        )
+        self.view = simple.GetActiveView()
+        self.view.MakeRenderWindowInteractor(True)
+        simple.Render(self.view)
 
-    # HTML
-    with SinglePageLayout(server) as layout:
-        layout.icon.click = ctrl.view_reset_camera
-        layout.title.set_text("ParaView State Viewer")
+        # HTML
+        with SinglePageLayout(self.server) as self.ui:
+            self.ui.icon.click = self.ctrl.view_reset_camera
+            self.ui.title.set_text("ParaView State Viewer")
 
-        with layout.content:
-            with vuetify.VContainer(fluid=True, classes="pa-0 fill-height"):
-                html_view = paraview.VtkRemoteView(view)
-                ctrl.view_reset_camera = html_view.reset_camera
-                ctrl.view_update = html_view.update
-
-
-ctrl.on_server_ready.add(load_data)
+            with self.ui.content:
+                with v3.VContainer(fluid=True, classes="pa-0 fill-height"):
+                    html_view = paraview.VtkRemoteView(self.view)
+                    self.ctrl.view_reset_camera = html_view.reset_camera
+                    self.ctrl.view_update = html_view.update 
 
 # -----------------------------------------------------------------------------
 # GUI
 # -----------------------------------------------------------------------------
 
-state.trame__title = "State Viewer"
+    def _build_ui(self):
+        self.state.trame__title = "State Viewer"
 
-with SinglePageLayout(server) as layout:
-    layout.icon.click = ctrl.view_reset_camera
-    layout.title.set_text("ParaView State Viewer")
+        with SinglePageLayout(self.server) as self.ui:
+            self.ui.icon.click = self.ctrl.view_reset_camera
+            self.ui.title.set_text("ParaView State Viewer")
 
-    with layout.content:
-        with vuetify.VContainer(fluid=True, classes="pa-0 fill-height"):
-            client.Loading("Loading state")
+            with self.ui.content:
+                with v3.VContainer(fluid=True, classes="pa-0 fill-height"):
+                    client.Loading("Loading state")
 
 
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 
+def main():
+    app = StateLoaderApp()
+    app.server.start()
+
 if __name__ == "__main__":
-    server.cli.add_argument("--data", help="Path to state file", dest="data")
-    server.start()
+    main()

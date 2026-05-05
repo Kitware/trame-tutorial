@@ -3,8 +3,7 @@ import os
 from trame.app import TrameApp
 from trame.ui.vuetify3 import SinglePageLayout
 from trame.widgets import vuetify3 as v3
-from trame.widgets import vtk, trame
-from trame.decorators import change
+from trame.widgets import vtk
 
 from vtkmodules.vtkRenderingCore import (
     vtkActor,

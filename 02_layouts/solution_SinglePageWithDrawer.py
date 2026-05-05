@@ -1,6 +1,6 @@
-from trame.app import get_server
-from trame.ui.vuetify3 import SinglePageWithDrawerLayout
-from trame.widgets import vtk, vuetify3
+from trame.app import TrameApp
+from trame.ui.vuetify3 import SinglePageLayout
+from trame.widgets import vtk, vuetify3 as v3
 
 from vtkmodules.vtkFiltersSources import vtkConeSource
 from vtkmodules.vtkRenderingCore import (
@@ -44,23 +44,31 @@ renderer.ResetCamera()
 # Trame
 # -----------------------------------------------------------------------------
 
-server = get_server()
-ctrl = server.controller
+class AppCone(TrameApp):
+    def __init__(self, server=None):
+        super().__init__(server)
+        self._build_ui()
 
-with SinglePageWithDrawerLayout(server) as layout:
-    layout.title.set_text("Hello trame")
+    def _build_ui(self):
+        with SinglePageLayout(self.server) as self.ui:
+            self.ui.title.set_text("Hello trame")
 
-    with layout.content:
-        with vuetify3.VContainer(
-            fluid=True,
-            classes="pa-0 fill-height",
-        ):
-            view = vtk.VtkLocalView(renderWindow)
+            with self.ui.content:
+                with v3.VContainer(
+                    fluid=True,
+                    classes="pa-0 fill-height",
+                ):
+                    view = vtk.VtkLocalView(renderWindow)
+                    self.ctrl.on_server_ready.add(view.update)
 
 
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 
+def main():
+    app = AppCone()
+    app.server.start()
+
 if __name__ == "__main__":
-    server.start()
+    main()

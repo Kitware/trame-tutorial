@@ -1,22 +1,29 @@
-from trame.app import get_server
+from trame.app import TrameApp
 from trame.ui.vuetify3 import SinglePageLayout
 
 # -----------------------------------------------------------------------------
 # Get a server to work with
 # -----------------------------------------------------------------------------
 
-server = get_server()
+class AppCone(TrameApp):
+    def __init__(self, server=None):
+        super().__init__(server)
+        self._build_ui()
 
 # -----------------------------------------------------------------------------
 # GUI
 # -----------------------------------------------------------------------------
-
-with SinglePageLayout(server) as layout:
-    layout.title.set_text("Hello trame")
+    def _build_ui(self):
+        with SinglePageLayout(self.server) as self.ui:
+            self.ui.title.set_text("Hello trame")
 
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 
+def main():
+    app = AppCone()
+    app.server.start()
+
 if __name__ == "__main__":
-    server.start()
+    main()

@@ -6,6 +6,8 @@ from trame.decorators import change
 
 from paraview import simple
 
+DEFAULT_RESOLUTION = 6
+
 # -----------------------------------------------------------------------------
 # trame setup
 # -----------------------------------------------------------------------------
@@ -13,8 +15,6 @@ from paraview import simple
 class ConeApp(TrameApp):
     def __init__(self, server=None):   
         super().__init__(server)
-
-        self.DEFAULT_RESOLUTION = 6
 
         self._init_paraview()
         self._build_ui()
@@ -36,7 +36,7 @@ class ConeApp(TrameApp):
 
 
     def update_reset_resolution(self):
-        self.state.resolution = self.DEFAULT_RESOLUTION
+        self.state.resolution = DEFAULT_RESOLUTION
 
 
 # -----------------------------------------------------------------------------
@@ -53,7 +53,7 @@ class ConeApp(TrameApp):
             with self.ui.toolbar:
                 v3.VSpacer()
                 v3.VSlider(
-                    v_model=("resolution", self.DEFAULT_RESOLUTION),
+                    v_model=("resolution", DEFAULT_RESOLUTION),
                     min=3,
                     max=60,
                     step=1,

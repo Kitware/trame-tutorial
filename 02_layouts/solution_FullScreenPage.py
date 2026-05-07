@@ -1,6 +1,6 @@
-from trame.app import get_server
+from trame.app import TrameApp
 from trame.ui.vuetify3 import VAppLayout
-from trame.widgets import vtk, vuetify3
+from trame.widgets import vtk, vuetify3 as v3
 
 from vtkmodules.vtkFiltersSources import vtkConeSource
 from vtkmodules.vtkRenderingCore import (
@@ -44,20 +44,29 @@ renderer.ResetCamera()
 # Trame
 # -----------------------------------------------------------------------------
 
-server = get_server()
-ctrl = server.controller
+class AppCone(TrameApp):
+    def __init__(self, server=None):
+        super().__init__(server)
+        self._build_ui()
 
-with VAppLayout(server) as layout:
-    with layout.root:
-        with vuetify3.VContainer(
-            fluid=True,
-            classes="pa-0 fill-height",
-        ):
-            view = vtk.VtkLocalView(renderWindow)
+    def _build_ui(self):
+        with VAppLayout(self.server) as self.ui:
+            with self.ui.root:
+                with v3.VContainer(
+                    fluid=True,
+                    classes="pa-0 fill-height",
+                ):
+                    view = vtk.VtkLocalView(renderWindow)
+                    self.ctrl.on_server_ready.add(view.update)
+
 
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 
+def main():
+    app = AppCone()
+    app.server.start()
+
 if __name__ == "__main__":
-    server.start()
+    main()

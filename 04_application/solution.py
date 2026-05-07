@@ -279,59 +279,59 @@ class App(TrameApp):
 
 
     @change("mesh_representation")
-    def update_mesh_representation(self, mesh_representation, **kwargs):
+    def update_mesh_representation(self, mesh_representation, **_kwargs):
         update_representation(mesh_actor, mesh_representation)
         self.ctrl.view_update()
 
 
     @change("contour_representation")
-    def update_contour_representation(self, contour_representation, **kwargs):
+    def update_contour_representation(self, contour_representation, **_kwargs):
         update_representation(contour_actor, contour_representation)
         self.ctrl.view_update()
 
 
     @change("mesh_color_array_idx")
-    def update_mesh_color_by_name(self, mesh_color_array_idx, **kwargs):
+    def update_mesh_color_by_name(self, mesh_color_array_idx, **_kwargs):
         array = dataset_arrays[mesh_color_array_idx]
         color_by_array(mesh_actor, array)
         self.ctrl.view_update()
 
 
     @change("contour_color_array_idx")
-    def update_contour_color_by_name(self, contour_color_array_idx, **kwargs):
+    def update_contour_color_by_name(self, contour_color_array_idx, **_kwargs):
         array = dataset_arrays[contour_color_array_idx]
         color_by_array(contour_actor, array)
         self.ctrl.view_update()
 
 
     @change("mesh_color_preset")
-    def update_mesh_color_preset(self, mesh_color_preset, **kwargs):
+    def update_mesh_color_preset(self, mesh_color_preset, **_kwargs):
         use_preset(mesh_actor, mesh_color_preset)
         self.ctrl.view_update()
 
 
     @change("contour_color_preset")
-    def update_contour_color_preset(self, contour_color_preset, **kwargs):
+    def update_contour_color_preset(self, contour_color_preset, **_kwargs):
         use_preset(contour_actor, contour_color_preset)
         self.ctrl.view_update()
 
 
     # Opacity Callbacks
     @change("mesh_opacity")
-    def update_mesh_opacity(self, mesh_opacity, **kwargs):
+    def update_mesh_opacity(self, mesh_opacity, **_kwargs):
         mesh_actor.GetProperty().SetOpacity(mesh_opacity)
         self.ctrl.view_update()
 
 
     @change("contour_opacity")
-    def update_contour_opacity(self, contour_opacity, **kwargs):
+    def update_contour_opacity(self, contour_opacity, **_kwargs):
         contour_actor.GetProperty().SetOpacity(contour_opacity)
         self.ctrl.view_update()
 
 
     # Contour Callbacks
     @change("contour_by_array_idx")
-    def update_contour_by(self, contour_by_array_idx, **kwargs):
+    def update_contour_by(self, contour_by_array_idx, **_kwargs):
         array = dataset_arrays[contour_by_array_idx]
         contour_min, contour_max = array.get("range")
         contour_step = 0.01 * (contour_max - contour_min)
@@ -350,7 +350,7 @@ class App(TrameApp):
 
 
     @change("contour_value")
-    def update_contour_value(self, contour_value, **kwargs):
+    def update_contour_value(self, contour_value, **_kwargs):
         contour.SetValue(0, float(contour_value))
         self.ctrl.view_update()
 

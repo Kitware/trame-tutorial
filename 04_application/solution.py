@@ -236,6 +236,186 @@ def use_preset(actor, preset):
 
 
 # -----------------------------------------------------------------------------
+# GUI elements
+# -----------------------------------------------------------------------------
+
+
+def ui_card(title, ui_name):
+    with v3.VCard(v_show=f"active_ui == '{ui_name}'"):
+        v3.VCardTitle(
+            title,
+            classes="grey lighten-1 py-1 grey--text text--darken-3",
+            style="user-select: none; cursor: pointer",
+            hide_details=True,
+            density="compact",
+        )
+        content = v3.VCardText(classes="py-2")
+    return content
+
+
+def mesh_card():
+    with ui_card(title="Mesh", ui_name="mesh"):
+        v3.VSelect(
+            # Representation
+            v_model=("mesh_representation", Representation.Surface),
+            items=(
+                "representations",
+                [
+                    {"text": "Points", "value": 0},
+                    {"text": "Wireframe", "value": 1},
+                    {"text": "Surface", "value": 2},
+                    {"text": "SurfaceWithEdges", "value": 3},
+                ],
+            ),
+            item_title="text",
+            item_value="value",
+            label="Representation",
+            hide_details=True,
+            density="compact",
+            outlined=True,
+            classes="pt-1",
+        )
+        with v3.VRow(classes="pt-2", density="compact"):
+            with v3.VCol(cols="6"):
+                v3.VSelect(
+                    # Color By
+                    label="Color by",
+                    v_model=("mesh_color_array_idx", 0),
+                    items=("array_list", dataset_arrays),
+                    item_title="text",
+                    item_value="value",
+                    hide_details=True,
+                    density="compact",
+                    outlined=True,
+                    classes="pt-1",
+                )
+            with v3.VCol(cols="6"):
+                v3.VSelect(
+                    # Color Map
+                    label="Colormap",
+                    v_model=("mesh_color_preset", LookupTable.Rainbow),
+                    items=(
+                        "colormaps",
+                        [
+                            {"text": "Rainbow", "value": 0},
+                            {"text": "Inv Rainbow", "value": 1},
+                            {"text": "Greyscale", "value": 2},
+                            {"text": "Inv Greyscale", "value": 3},
+                        ],
+                    ),
+                    item_title="text",
+                    item_value="value",
+                    hide_details=True,
+                    density="compact",
+                    outlined=True,
+                    classes="pt-1",
+                )
+        v3.VSlider(
+            # Opacity
+            v_model=("mesh_opacity", 1.0),
+            min=0,
+            max=1,
+            step=0.1,
+            label="Opacity",
+            classes="mt-1",
+            hide_details=True,
+            density="compact",
+        )
+
+
+def contour_card():
+    with ui_card(title="Contour", ui_name="contour"):
+        v3.VSelect(
+            # Contour By
+            label="Contour by",
+            v_model=("contour_by_array_idx", 0),
+            items=("array_list", dataset_arrays),
+            item_title="text",
+            item_value="value",
+            hide_details=True,
+            density="compact",
+            outlined=True,
+            classes="pt-1",
+        )
+        v3.VSlider(
+            # Contour Value
+            v_model=("contour_value", contour_value),
+            min=("contour_min", default_min),
+            max=("contour_max", default_max),
+            step=("contour_step", 0.01 * (default_max - default_min)),
+            label="Value",
+            classes="my-1",
+            hide_details=True,
+            density="compact",
+        )
+        v3.VSelect(
+            # Representation
+            v_model=("contour_representation", Representation.Surface),
+            items=(
+                "representations",
+                [
+                    {"text": "Points", "value": 0},
+                    {"text": "Wireframe", "value": 1},
+                    {"text": "Surface", "value": 2},
+                    {"text": "SurfaceWithEdges", "value": 3},
+                ],
+            ),
+            item_title="text",
+            item_value="value",
+            label="Representation",
+            hide_details=True,
+            density="compact",
+            outlined=True,
+            classes="pt-1",
+        )
+        with v3.VRow(classes="pt-2", density="compact"):
+            with v3.VCol(cols="6"):
+                v3.VSelect(
+                    # Color By
+                    label="Color by",
+                    v_model=("contour_color_array_idx", 0),
+                    items=("array_list", dataset_arrays),
+                    item_title="text",
+                    item_value="value",
+                    hide_details=True,
+                    density="compact",
+                    outlined=True,
+                    classes="pt-1",
+                )
+            with v3.VCol(cols="6"):
+                v3.VSelect(
+                    # Color Map
+                    label="Colormap",
+                    v_model=("contour_color_preset", LookupTable.Rainbow),
+                    items=(
+                        "colormaps",
+                        [
+                            {"text": "Rainbow", "value": 0},
+                            {"text": "Inv Rainbow", "value": 1},
+                            {"text": "Greyscale", "value": 2},
+                            {"text": "Inv Greyscale", "value": 3},
+                        ],
+                    ),
+                    item_title="text",
+                    item_value="value",
+                    hide_details=True,
+                    density="compact",
+                    outlined=True,
+                    classes="pt-1",
+                )
+        v3.VSlider(
+            # Opacity
+            v_model=("contour_opacity", 1.0),
+            min=0,
+            max=1,
+            step=0.1,
+            label="Opacity",
+            classes="mt-1",
+            hide_details=True,
+            density="compact",
+        )
+
+# -----------------------------------------------------------------------------
 # Trame setup
 # -----------------------------------------------------------------------------
 
@@ -406,182 +586,6 @@ class App(TrameApp):
         )
 
 
-    def ui_card(self, title, ui_name):
-        with v3.VCard(v_show=f"active_ui == '{ui_name}'"):
-            v3.VCardTitle(
-                title,
-                classes="grey lighten-1 py-1 grey--text text--darken-3",
-                style="user-select: none; cursor: pointer",
-                hide_details=True,
-                density="compact",
-            )
-            content = v3.VCardText(classes="py-2")
-        return content
-
-
-    def mesh_card(self):
-        with self.ui_card(title="Mesh", ui_name="mesh"):
-            v3.VSelect(
-                # Representation
-                v_model=("mesh_representation", Representation.Surface),
-                items=(
-                    "representations",
-                    [
-                        {"text": "Points", "value": 0},
-                        {"text": "Wireframe", "value": 1},
-                        {"text": "Surface", "value": 2},
-                        {"text": "SurfaceWithEdges", "value": 3},
-                    ],
-                ),
-                item_title="text",
-                item_value="value",
-                label="Representation",
-                hide_details=True,
-                density="compact",
-                outlined=True,
-                classes="pt-1",
-            )
-            with v3.VRow(classes="pt-2", density="compact"):
-                with v3.VCol(cols="6"):
-                    v3.VSelect(
-                        # Color By
-                        label="Color by",
-                        v_model=("mesh_color_array_idx", 0),
-                        items=("array_list", dataset_arrays),
-                        item_title="text",
-                        item_value="value",
-                        hide_details=True,
-                        density="compact",
-                        outlined=True,
-                        classes="pt-1",
-                    )
-                with v3.VCol(cols="6"):
-                    v3.VSelect(
-                        # Color Map
-                        label="Colormap",
-                        v_model=("mesh_color_preset", LookupTable.Rainbow),
-                        items=(
-                            "colormaps",
-                            [
-                                {"text": "Rainbow", "value": 0},
-                                {"text": "Inv Rainbow", "value": 1},
-                                {"text": "Greyscale", "value": 2},
-                                {"text": "Inv Greyscale", "value": 3},
-                            ],
-                        ),
-                        item_title="text",
-                        item_value="value",
-                        hide_details=True,
-                        density="compact",
-                        outlined=True,
-                        classes="pt-1",
-                    )
-            v3.VSlider(
-                # Opacity
-                v_model=("mesh_opacity", 1.0),
-                min=0,
-                max=1,
-                step=0.1,
-                label="Opacity",
-                classes="mt-1",
-                hide_details=True,
-                density="compact",
-            )
-
-
-    def contour_card(self):
-        with self.ui_card(title="Contour", ui_name="contour"):
-            v3.VSelect(
-                # Contour By
-                label="Contour by",
-                v_model=("contour_by_array_idx", 0),
-                items=("array_list", dataset_arrays),
-                item_title="text",
-                item_value="value",
-                hide_details=True,
-                density="compact",
-                outlined=True,
-                classes="pt-1",
-            )
-            v3.VSlider(
-                # Contour Value
-                v_model=("contour_value", contour_value),
-                min=("contour_min", default_min),
-                max=("contour_max", default_max),
-                step=("contour_step", 0.01 * (default_max - default_min)),
-                label="Value",
-                classes="my-1",
-                hide_details=True,
-                density="compact",
-            )
-            v3.VSelect(
-                # Representation
-                v_model=("contour_representation", Representation.Surface),
-                items=(
-                    "representations",
-                    [
-                        {"text": "Points", "value": 0},
-                        {"text": "Wireframe", "value": 1},
-                        {"text": "Surface", "value": 2},
-                        {"text": "SurfaceWithEdges", "value": 3},
-                    ],
-                ),
-                item_title="text",
-                item_value="value",
-                label="Representation",
-                hide_details=True,
-                density="compact",
-                outlined=True,
-                classes="pt-1",
-            )
-            with v3.VRow(classes="pt-2", density="compact"):
-                with v3.VCol(cols="6"):
-                    v3.VSelect(
-                        # Color By
-                        label="Color by",
-                        v_model=("contour_color_array_idx", 0),
-                        items=("array_list", dataset_arrays),
-                        item_title="text",
-                        item_value="value",
-                        hide_details=True,
-                        density="compact",
-                        outlined=True,
-                        classes="pt-1",
-                    )
-                with v3.VCol(cols="6"):
-                    v3.VSelect(
-                        # Color Map
-                        label="Colormap",
-                        v_model=("contour_color_preset", LookupTable.Rainbow),
-                        items=(
-                            "colormaps",
-                            [
-                                {"text": "Rainbow", "value": 0},
-                                {"text": "Inv Rainbow", "value": 1},
-                                {"text": "Greyscale", "value": 2},
-                                {"text": "Inv Greyscale", "value": 3},
-                            ],
-                        ),
-                        item_title="text",
-                        item_value="value",
-                        hide_details=True,
-                        density="compact",
-                        outlined=True,
-                        classes="pt-1",
-                    )
-            v3.VSlider(
-                # Opacity
-                v_model=("contour_opacity", 1.0),
-                min=0,
-                max=1,
-                step=0.1,
-                label="Opacity",
-                classes="mt-1",
-                hide_details=True,
-                density="compact",
-            )
-
-
 # -----------------------------------------------------------------------------
 # GUI
 # -----------------------------------------------------------------------------
@@ -601,8 +605,8 @@ class App(TrameApp):
                 drawer.width = 325
                 self.pipeline_widget()
                 v3.VDivider(classes="mb-2")
-                self.mesh_card()
-                self.contour_card()
+                mesh_card()
+                contour_card()
 
             with self.ui.content:
                 # content components

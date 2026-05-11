@@ -46,7 +46,7 @@ class AppButtons(TrameApp):
         self.renderer.ResetCamera()
     
     @change("resolution")
-    def update_resolution(self, resolution, **_kwargs):
+    def update_resolution(self, resolution, **_):
         self.cone_source.SetResolution(resolution)
         self.ctrl.view_update()
 

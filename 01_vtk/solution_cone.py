@@ -59,8 +59,6 @@ class AppCone(TrameApp):
                     classes="pa-0 fill-height",
                 ):
                     html_view = vtk.VtkLocalView(renderWindow)
-                    self.ctrl.on_server_ready.add(html_view.update)
-
 
 # -----------------------------------------------------------------------------
 # Main

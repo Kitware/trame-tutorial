@@ -29,7 +29,7 @@ class StateLoaderApp(TrameApp):
 # -----------------------------------------------------------------------------
 
 
-    def load_data(self, **_kwargs):
+    def load_data(self, **_):
         # CLI
         args, _ = self.server.cli.parse_known_args()
 

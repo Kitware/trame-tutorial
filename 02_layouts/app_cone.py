@@ -44,7 +44,7 @@ renderer.ResetCamera()
 # Trame
 # -----------------------------------------------------------------------------
 
-class AppCone(TrameApp):
+class ConeApp(TrameApp):
     def __init__(self, server=None):
         super().__init__(server)
         self._build_ui()
@@ -67,7 +67,7 @@ class AppCone(TrameApp):
 # -----------------------------------------------------------------------------
 
 def main():
-    app = AppCone()
+    app = ConeApp()
     app.server.start()
 
 if __name__ == "__main__":

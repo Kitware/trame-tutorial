@@ -30,7 +30,7 @@ class ConeApp(TrameApp):
 
 
     @change("resolution")
-    def update_cone(self, resolution, **_kwargs):
+    def update_cone(self, resolution, **_):
         self.cone.Resolution = resolution
         self.ctrl.view_update()
 
